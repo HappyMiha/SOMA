@@ -5,6 +5,8 @@
 .firecrawl/
 __pycache__/
 *.pyc
+*.sqlite3-shm
+*.sqlite3-wal
 .pytest_cache/
 build/
 dist/
