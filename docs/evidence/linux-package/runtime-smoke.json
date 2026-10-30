@@ -1,5 +1,5 @@
 {
-  "started_at": "2026-10-30T14:41:50.629656+00:00",
+  "started_at": "2026-10-30T14:49:24.837505+00:00",
   "passed": true,
   "mode": "packaged",
   "cognition": "deterministic loopback wait stub; no AI/VLM screenshot interpretation",
@@ -13,22 +13,22 @@
   "runs": [
     {
       "run": 1,
-      "started_at": "2026-10-30T14:41:50.638136+00:00",
+      "started_at": "2026-10-30T14:49:24.845517+00:00",
       "command": [
-        "/mnt/d/Lokvetia/SOMA/artifacts/linux/deb-extracted-final/opt/soma/SOMA",
+        "/mnt/d/Lokvetia/SOMA/artifacts/linux/deb-extracted-current-final/opt/soma/SOMA",
         "--smoke-seconds",
         "5",
         "--smoke-life",
         "--data-dir",
-        "/tmp/soma-runtime-smoke-y06k8i54"
+        "/tmp/soma-runtime-smoke-vevmzx7h"
       ],
       "stdout_log": "run-1.stdout.log",
       "stderr_log": "run-1.stderr.log",
       "exit_code": 0,
-      "ended_at": "2026-10-30T14:41:57.228543+00:00",
-      "duration_seconds": 6.59,
+      "ended_at": "2026-10-30T14:49:31.182713+00:00",
+      "duration_seconds": 6.337,
       "storage": {
-        "persona_id": "412923c6-195b-454a-8bd8-c6f1ffd97dde",
+        "persona_id": "4cbadb41-8673-43b9-af52-53bb905a4fc2",
         "event_counts": {
           "identity.created": 1,
           "wake": 1,
@@ -48,22 +48,22 @@
     },
     {
       "run": 2,
-      "started_at": "2026-10-30T14:41:57.229501+00:00",
+      "started_at": "2026-10-30T14:49:31.183798+00:00",
       "command": [
-        "/mnt/d/Lokvetia/SOMA/artifacts/linux/deb-extracted-final/opt/soma/SOMA",
+        "/mnt/d/Lokvetia/SOMA/artifacts/linux/deb-extracted-current-final/opt/soma/SOMA",
         "--smoke-seconds",
         "5",
         "--smoke-life",
         "--data-dir",
-        "/tmp/soma-runtime-smoke-y06k8i54"
+        "/tmp/soma-runtime-smoke-vevmzx7h"
       ],
       "stdout_log": "run-2.stdout.log",
       "stderr_log": "run-2.stderr.log",
       "exit_code": 0,
-      "ended_at": "2026-10-30T14:42:04.016545+00:00",
-      "duration_seconds": 6.787,
+      "ended_at": "2026-10-30T14:49:37.921726+00:00",
+      "duration_seconds": 6.738,
       "storage": {
-        "persona_id": "412923c6-195b-454a-8bd8-c6f1ffd97dde",
+        "persona_id": "4cbadb41-8673-43b9-af52-53bb905a4fc2",
         "event_counts": {
           "identity.created": 1,
           "wake": 2,
@@ -93,44 +93,44 @@
   "requests": [
     {
       "path": "/v1/chat/completions",
-      "bytes_discarded": 59945,
-      "received_at": "2026-10-30T14:41:52.940657+00:00"
+      "bytes_discarded": 60024,
+      "received_at": "2026-10-30T14:49:27.072203+00:00"
     },
     {
       "path": "/v1/chat/completions",
-      "bytes_discarded": 69316,
-      "received_at": "2026-10-30T14:41:54.082056+00:00"
+      "bytes_discarded": 69395,
+      "received_at": "2026-10-30T14:49:28.225425+00:00"
     },
     {
       "path": "/v1/chat/completions",
-      "bytes_discarded": 71838,
-      "received_at": "2026-10-30T14:41:55.285664+00:00"
+      "bytes_discarded": 71913,
+      "received_at": "2026-10-30T14:49:29.434229+00:00"
     },
     {
       "path": "/v1/chat/completions",
-      "bytes_discarded": 72052,
-      "received_at": "2026-10-30T14:41:56.491579+00:00"
+      "bytes_discarded": 72127,
+      "received_at": "2026-10-30T14:49:30.642901+00:00"
     },
     {
       "path": "/v1/chat/completions",
-      "bytes_discarded": 66665,
-      "received_at": "2026-10-30T14:41:59.367056+00:00"
+      "bytes_discarded": 66744,
+      "received_at": "2026-10-30T14:49:33.258767+00:00"
     },
     {
       "path": "/v1/chat/completions",
-      "bytes_discarded": 71165,
-      "received_at": "2026-10-30T14:42:00.533093+00:00"
+      "bytes_discarded": 71244,
+      "received_at": "2026-10-30T14:49:34.432603+00:00"
     },
     {
       "path": "/v1/chat/completions",
-      "bytes_discarded": 71853,
-      "received_at": "2026-10-30T14:42:01.734493+00:00"
+      "bytes_discarded": 71928,
+      "received_at": "2026-10-30T14:49:35.640198+00:00"
     },
     {
       "path": "/v1/chat/completions",
-      "bytes_discarded": 72055,
-      "received_at": "2026-10-30T14:42:02.941323+00:00"
+      "bytes_discarded": 72130,
+      "received_at": "2026-10-30T14:49:36.859376+00:00"
     }
   ],
-  "ended_at": "2026-10-30T14:42:04.443403+00:00"
+  "ended_at": "2026-10-30T14:49:38.361589+00:00"
 }

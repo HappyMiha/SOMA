@@ -2,5 +2,7 @@
   "ExitCode": 0,
   "ExecutableExists": true,
   "InstallPath": "D:\\Lokvetia\\SOMA\\artifacts\\win32\\install-test",
-  "InstallerSHA256": "AFC7C1DD3F9E2916FBBAF6F7C1093E11334A0093F8F1CC36E55E9F4BEAE4514C"
+  "ObsoleteICUFilesRemoved": true,
+  "InstallerSHA256": "9FE9FB062A36294EF77DF820BA56C3A09D307E90547AF8EED5AAE0307D56EF32",
+  "SourceCommit": "4b4d3357f6b8e883b27e138fa70cb1e44a5b14a9"
 }

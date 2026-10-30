@@ -1,0 +1,30 @@
+{
+  "date": "2026-10-30T14:50:23.4171051Z",
+  "passed": true,
+  "source_commit": "4b4d3357f6b8e883b27e138fa70cb1e44a5b14a9",
+  "platform": "Microsoft Windows NT 10.0.19045.0",
+  "architecture": "x64",
+  "installer": {
+    "sha256": "9fe9fb062a36294ef77df820ba56c3a09d307e90547af8eed5aae0307d56ef32",
+    "bytes": 43729574,
+    "signature_status": "NotSigned",
+    "path": "artifacts/win32/SOMA-0.1.0-windows-x64-setup.exe"
+  },
+  "checks": {
+    "licenses_and_sbom": true,
+    "two_run_packaged_runtime": true,
+    "persona_continuity": true,
+    "obsolete_icu_upgrade_cleanup": true,
+    "static_bundle_guard": "PASS",
+    "installer_exit_code": 0,
+    "native_device_fixture": "PASS; owned live Windows interactive desktop fixture at DPR 2",
+    "runtime_native_inputs": 0,
+    "unit_tests": "108 passed, 15 subtests passed"
+  },
+  "limitations": [
+    "No real VLM/browser/correspondence/learning-transfer acceptance run",
+    "No physical reboot, secure-session or endurance gate",
+    "Development installer is unsigned",
+    "Package install tested in isolated workspace path, not a clean machine"
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "source_commit": "4b4d3357f6b8e883b27e138fa70cb1e44a5b14a9",
+  "production_source_sha256": {
+    "soma/__init__.py": "cefa9b8361ad0e056a27227b9076a87a7a9e051e0ed1ea5625519ab28a07b355",
+    "soma/__main__.py": "5a048733b78d46d8cc925233387c770673eca09f4064f07262d8ce9dd70faa91",
+    "soma/app.py": "ddb0a45902d56509fad425a424b32eb4d793329ad4c3092c84269939f5d0032f",
+    "soma/body.py": "40c3b7ad52b1b740b2322488c2d3587991fc54561a8d6ca862e52bda022a55a9",
+    "soma/config.py": "3c4415afa944c3bd03afa1f6751d43516b98f2d5fe1d0454c47533df8c3b8707",
+    "soma/core.py": "dcc7dbab14b70da1f59f49a816c87457d86348d03af0b3665849ac96be6640f8",
+    "soma/demonstration.py": "d1bc2f4daaf20f6fa5e85a6a181601cc9b9928393efa30c84029923f228a05cf",
+    "soma/kernel.py": "acbf4d15bd8bbe78020c895f201a938aa726774cf6584f1b7a78b6d1fe8ac53d",
+    "soma/memory.py": "bc3ba7472ad45f8b726c2d4468ae7e0c427a354c50ffbd454dac771b7673583d",
+    "soma/provider.py": "5275137d18a0085ddc44ad04bbb3ba1bdce97b3732d858a2ff5ccee26a2b49d2",
+    "soma/session.py": "fc907d01bd6aba0a9af13a094cf5aea7ca72abba009fc0eb4109c8ba461b80c4"
+  },
+  "artifacts": {
+    "artifacts/win32/SOMA-0.1.0-windows-x64-setup.exe": {
+      "bytes": 43729574,
+      "sha256": "9fe9fb062a36294ef77df820ba56c3a09d307e90547af8eed5aae0307d56ef32"
+    },
+    "artifacts/linux/SOMA-0.1.0-linux-amd64.deb": {
+      "bytes": 62757074,
+      "sha256": "6b3f4d9cf98eda90db42d3c35f2aa174cf106cb3e02800d66a659bbd02f7aaea"
+    }
+  },
+  "unit_tests_per_platform": {
+    "passed": 108,
+    "subtests_passed": 15
+  },
+  "full_specification_definition_of_done": false,
+  "acceptance_status": "docs/IMPLEMENTATION_STATUS.md"
+}

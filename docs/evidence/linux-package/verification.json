@@ -1,5 +1,5 @@
 {
-  "verified_at": "2026-10-30T14:42:04+00:00",
+  "verified_at": "2026-10-30T14:49:38.361589+00:00",
   "passed": true,
   "platform": {
     "distribution": "Ubuntu 24.04.1 LTS amd64",
@@ -10,14 +10,14 @@
   },
   "artifact": {
     "path": "artifacts/linux/SOMA-0.1.0-linux-amd64.deb",
-    "size_bytes": 62753918,
-    "sha256": "3f9b16723968ddd578ee2916f7cee511ea27f51e72238794ff9268b48607f399",
+    "size_bytes": 62757074,
+    "sha256": "6b3f4d9cf98eda90db42d3c35f2aa174cf106cb3e02800d66a659bbd02f7aaea",
     "package": "soma-desktop",
     "version": "0.1.0",
     "architecture": "amd64",
     "minimum_glibc": "2.38 (readelf requirement from bundled libpython; enforced by libc6 dependency)",
     "native_binary": "dist/linux/SOMA/SOMA",
-    "isolated_extracted_binary": "artifacts/linux/deb-extracted-final/opt/soma/SOMA",
+    "isolated_extracted_binary": "artifacts/linux/deb-extracted-current-final/opt/soma/SOMA",
     "host_installation_or_autostart_performed": false,
     "inspection": {
       "dpkg_deb_info": true,
@@ -31,7 +31,11 @@
     }
   },
   "tests": {
-    "unit_suite": {"passed": 106, "subtests_passed": 15, "duration_seconds": 8.86},
+    "unit_suite": {
+      "passed": 108,
+      "subtests_passed": 15,
+      "duration_seconds": 9.66
+    },
     "compileall": true,
     "desktop_e2e_help": true,
     "isolated_x11": {
@@ -51,8 +55,8 @@
     "final_extracted_package_ui_smoke": {
       "exit_code": 0,
       "bounded_ui_seconds": 3,
-      "whole_command_wall_seconds": 5.66,
-      "whole_command_max_rss_kib": 73268,
+      "whole_command_wall_seconds": 5.23,
+      "whole_command_max_rss_kib": 73548,
       "resource_scope": "GNU time around Xvfb plus packaged UI smoke; not an autonomy or inference benchmark"
     },
     "final_extracted_package_runtime_smoke": {
@@ -60,17 +64,29 @@
       "passed": true,
       "cognition": "Deterministic localhost wait-only stub; no AI or VLM interpretation",
       "runs": 2,
-      "same_persona_id": "412923c6-195b-454a-8bd8-c6f1ffd97dde",
+      "same_persona_id": "4cbadb41-8673-43b9-af52-53bb905a4fc2",
       "request_count": 8,
-      "captured_frame_counts": [8, 16],
-      "checkpoint_counts": [6, 12],
-      "wake_and_sleep_counts_after_second_run": [2, 2],
+      "captured_frame_counts": [
+        8,
+        16
+      ],
+      "checkpoint_counts": [
+        6,
+        12
+      ],
+      "wake_and_sleep_counts_after_second_run": [
+        2,
+        2
+      ],
       "identity_created_count": 1,
       "action_intent_count": 0,
       "demonstration_started_count": 0,
       "last_state": "ASLEEP",
       "sqlite_integrity": "ok",
-      "both_exit_codes": [0, 0]
+      "both_exit_codes": [
+        0,
+        0
+      ]
     }
   },
   "distribution_materials": {
@@ -88,7 +104,6 @@
   },
   "logs": [
     "artifacts/linux-build.log",
-    "artifacts/linux/deb-repack-final.log",
     "artifacts/linux/unit-tests-final.log",
     "artifacts/linux/x11-probe-final.log",
     "artifacts/linux/deb-info-final.txt",
@@ -104,5 +119,18 @@
     "The declared glibc floor is 2.38; compatibility beyond this Ubuntu 24.04.1 environment is unverified.",
     "PyInstaller reported optional libxcb-errors.so.0 unavailable; X11 native and packaged smoke checks passed without it.",
     "These measurements do not establish the specified laptop resource, energy, local-model or full benchmark acceptance gates."
-  ]
+  ],
+  "production_source_sha256": {
+    "soma/__init__.py": "cefa9b8361ad0e056a27227b9076a87a7a9e051e0ed1ea5625519ab28a07b355",
+    "soma/__main__.py": "5a048733b78d46d8cc925233387c770673eca09f4064f07262d8ce9dd70faa91",
+    "soma/app.py": "ddb0a45902d56509fad425a424b32eb4d793329ad4c3092c84269939f5d0032f",
+    "soma/body.py": "40c3b7ad52b1b740b2322488c2d3587991fc54561a8d6ca862e52bda022a55a9",
+    "soma/config.py": "3c4415afa944c3bd03afa1f6751d43516b98f2d5fe1d0454c47533df8c3b8707",
+    "soma/core.py": "dcc7dbab14b70da1f59f49a816c87457d86348d03af0b3665849ac96be6640f8",
+    "soma/demonstration.py": "d1bc2f4daaf20f6fa5e85a6a181601cc9b9928393efa30c84029923f228a05cf",
+    "soma/kernel.py": "acbf4d15bd8bbe78020c895f201a938aa726774cf6584f1b7a78b6d1fe8ac53d",
+    "soma/memory.py": "bc3ba7472ad45f8b726c2d4468ae7e0c427a354c50ffbd454dac771b7673583d",
+    "soma/provider.py": "5275137d18a0085ddc44ad04bbb3ba1bdce97b3732d858a2ff5ccee26a2b49d2",
+    "soma/session.py": "fc907d01bd6aba0a9af13a094cf5aea7ca72abba009fc0eb4109c8ba461b80c4"
+  }
 }
