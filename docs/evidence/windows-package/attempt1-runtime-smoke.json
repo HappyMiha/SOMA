@@ -1,0 +1,36 @@
+{
+  "started_at": "2026-10-30T14:38:21.342275+00:00",
+  "passed": false,
+  "mode": "packaged",
+  "cognition": "deterministic loopback wait stub; no AI/VLM screenshot interpretation",
+  "scope": "two-run native UI/body capture/provider/storage/shutdown integration",
+  "screenshots": "App-owned temporary frames only; harness never reads or decodes image files or HTTP image content",
+  "limitations": [
+    "No VLM autonomy, workflow competence or correspondence established",
+    "No native input or demonstration hooks requested",
+    "Current host/session only"
+  ],
+  "runs": [
+    {
+      "run": 1,
+      "started_at": "2026-10-30T14:38:21.356585+00:00",
+      "command": [
+        "D:\\Lokvetia\\SOMA\\artifacts\\win32\\install-test\\SOMA.exe",
+        "--smoke-seconds",
+        "5",
+        "--smoke-life",
+        "--data-dir",
+        "C:\\Users\\HAPPYD~1\\AppData\\Local\\Temp\\soma-runtime-smoke-dqzekf_w"
+      ],
+      "stdout_log": "run-1.stdout.log",
+      "stderr_log": "run-1.stderr.log",
+      "timed_out": true,
+      "exit_code": 1,
+      "ended_at": "2026-10-30T14:38:51.450002+00:00",
+      "duration_seconds": 30.093
+    }
+  ],
+  "error": "RuntimeError: Target run 1 did not shut down cleanly",
+  "requests": [],
+  "ended_at": "2026-10-30T14:38:51.776434+00:00"
+}

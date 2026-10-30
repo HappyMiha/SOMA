@@ -1,0 +1,28 @@
+{
+  "passed": true,
+  "bundle": "D:\\Lokvetia\\SOMA\\artifacts\\win32\\install-test",
+  "forbidden_icu_files": [],
+  "scope": "static PE import and bundle inventory regression; native smoke remains required",
+  "qt_system_icu_imports": [
+    "UCNV_FROM_U_CALLBACK_SUBSTITUTE",
+    "UCNV_TO_U_CALLBACK_SUBSTITUTE",
+    "ucnv_cbFromUWriteUChars",
+    "ucnv_cbToUWriteUChars",
+    "ucnv_close",
+    "ucnv_countAvailable",
+    "ucnv_fromUCountPending",
+    "ucnv_fromUnicode",
+    "ucnv_getAvailableName",
+    "ucnv_getFromUCallBack",
+    "ucnv_getMaxCharSize",
+    "ucnv_getName",
+    "ucnv_getStandardName",
+    "ucnv_getToUCallBack",
+    "ucnv_open",
+    "ucnv_reset",
+    "ucnv_setFromUCallBack",
+    "ucnv_setToUCallBack",
+    "ucnv_toUCountPending",
+    "ucnv_toUnicode"
+  ]
+}

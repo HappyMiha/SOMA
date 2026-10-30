@@ -1,0 +1,140 @@
+{
+  "host": "Windows-10-10.0.19045-SP0",
+  "python": "3.11.15 (main, Aug  7 2026, 02:24:19) [MSC v.1944 64 bit (AMD64)]",
+  "pins": {
+    "ShowUI-Aloha": {
+      "sha": "f998a8b1f132f9b1cd37b86dc20b124be37343a2",
+      "license_sha256": "1eb85fc97224598dad1852b5d6483bbcf0aa8608790dcc657a5a2a761ae9c8c6"
+    },
+    "OpenAdapt": {
+      "sha": "ffd9b6d1ad0870cf8e094de07302a5e9e35b5ddc",
+      "license_sha256": "7f2bc0ccbf15854bbe46f5fa0e7cb26fe42f88ec9f8c9b151f0f93c4415820f9"
+    },
+    "openadapt-capture": {
+      "sha": "6e2e1ad6e882a99b6e6e742a85cb812aee82c59f",
+      "license_sha256": "62bbd67d1a7c8c26bc268f057574180df3e264742890dc3b6abbabaa440c06dc"
+    },
+    "ShowUI": {
+      "sha": "21ed7cb24be0cc877bb8352ee34d58a9aea2c876",
+      "license_sha256": "0b17e7fe92358cc50f467b0164cfe05ec8a15bb6b9635e40c50837f74d977a0f"
+    }
+  },
+  "ShowUI-Aloha": {
+    "status": "PASS",
+    "kind": "offline public demonstration log parsing",
+    "raw_events": 98,
+    "processed_actions": 17,
+    "nonpixel_window_metadata_retained": true,
+    "negative_coordinate_extracted": false,
+    "pipeline_stdout": [
+      "Parsed 97 raw actions",
+      "After keyboard merge: 31 actions",
+      "After mouse merge: 18 actions",
+      "After drag merge: 18 actions",
+      "After scroll processing: 18 actions",
+      "After typing merge: 17 actions",
+      "After double-click cleanup: 17 actions",
+      "After click-before-drag and final recording cleanup: 16 actions"
+    ],
+    "inference": "NOT RUN",
+    "live_recording": "NOT RUN"
+  },
+  "OpenAdapt": {
+    "status": "PASS",
+    "kind": "offline structural route detection",
+    "coverage": {
+      "click_steps": 2,
+      "armed_clicks": 1,
+      "armed_coverage": 0.5
+    },
+    "capture_geometry": {
+      "status": "PASS",
+      "kind": "offline geometry",
+      "snapshot": {
+        "schema_version": "openadapt.capture.display-topology/v1",
+        "coordinate_space": "virtual_desktop_pixels",
+        "origin": [
+          -1920,
+          0
+        ],
+        "viewport": [
+          4480,
+          1440
+        ],
+        "monitor_count": 2,
+        "monitors": [
+          [
+            -1920,
+            0,
+            1920,
+            1080
+          ],
+          [
+            0,
+            0,
+            2560,
+            1440
+          ]
+        ],
+        "topology_sha256": "5cc654ca6eafb7e060846cc1e9a34a3d4c77578f33fc39c5138cb326951ad5cc"
+      },
+      "negative_origin_translation": true,
+      "malformed_rejected": true
+    },
+    "live_capture_or_replay": "NOT RUN"
+  },
+  "openadapt-capture": {
+    "status": "PASS",
+    "kind": "offline geometry",
+    "snapshot": {
+      "schema_version": "openadapt.capture.display-topology/v1",
+      "coordinate_space": "virtual_desktop_pixels",
+      "origin": [
+        -1920,
+        0
+      ],
+      "viewport": [
+        4480,
+        1440
+      ],
+      "monitor_count": 2,
+      "monitors": [
+        [
+          -1920,
+          0,
+          1920,
+          1080
+        ],
+        [
+          0,
+          0,
+          2560,
+          1440
+        ]
+      ],
+      "topology_sha256": "5cc654ca6eafb7e060846cc1e9a34a3d4c77578f33fc39c5138cb326951ad5cc"
+    },
+    "negative_origin_translation": true,
+    "malformed_rejected": true
+  },
+  "ShowUI": {
+    "status": "PASS",
+    "kind": "isolated upstream output postprocessor",
+    "point": [
+      960.0,
+      270.0
+    ],
+    "out_of_range_not_rejected": [
+      2880.0,
+      -270.0
+    ],
+    "requires_added_validation": true,
+    "model_inference": "NOT RUN"
+  },
+  "limitations": [
+    "No live recording or input injection",
+    "No model weights downloaded",
+    "No inference calls",
+    "No Windows, X11, or Wayland GUI acceptance gate executed"
+  ]
+}

@@ -1,0 +1,131 @@
+{
+  "started_at": "2026-10-30T14:32:08.461353+00:00",
+  "passed": true,
+  "mode": "source",
+  "cognition": "deterministic loopback wait stub; no AI/VLM screenshot interpretation",
+  "scope": "two-run native UI/body capture/provider/storage/shutdown integration",
+  "screenshots": "App-owned temporary frames only; harness never reads or decodes image files or HTTP image content",
+  "limitations": [
+    "No VLM autonomy, workflow competence or correspondence established",
+    "No native input or demonstration hooks requested",
+    "Current host/session only"
+  ],
+  "runs": [
+    {
+      "run": 1,
+      "started_at": "2026-10-30T14:32:08.480508+00:00",
+      "command": [
+        "D:\\Lokvetia\\SOMA\\.venv\\Scripts\\python.exe",
+        "-m",
+        "soma",
+        "--smoke-seconds",
+        "5",
+        "--smoke-life",
+        "--data-dir",
+        "C:\\Users\\HAPPYD~1\\AppData\\Local\\Temp\\soma-runtime-smoke-0p6oiy9y"
+      ],
+      "stdout_log": "run-1.stdout.log",
+      "stderr_log": "run-1.stderr.log",
+      "exit_code": 0,
+      "ended_at": "2026-10-30T14:32:14.034371+00:00",
+      "duration_seconds": 5.562,
+      "storage": {
+        "persona_id": "fbce1f64-63d2-4986-86fd-1b7091dce3d0",
+        "event_counts": {
+          "identity.created": 1,
+          "wake": 1,
+          "frame.captured": 6,
+          "goal.updated": 3,
+          "rest": 2,
+          "checkpoint": 4,
+          "sleep": 1
+        },
+        "checkpoint_count": 4,
+        "captured_frames": 6,
+        "action_rows": 0,
+        "last_state": "ASLEEP",
+        "integrity_check": "ok"
+      },
+      "loopback_requests": 3
+    },
+    {
+      "run": 2,
+      "started_at": "2026-10-30T14:32:14.038690+00:00",
+      "command": [
+        "D:\\Lokvetia\\SOMA\\.venv\\Scripts\\python.exe",
+        "-m",
+        "soma",
+        "--smoke-seconds",
+        "5",
+        "--smoke-life",
+        "--data-dir",
+        "C:\\Users\\HAPPYD~1\\AppData\\Local\\Temp\\soma-runtime-smoke-0p6oiy9y"
+      ],
+      "stdout_log": "run-2.stdout.log",
+      "stderr_log": "run-2.stderr.log",
+      "exit_code": 0,
+      "ended_at": "2026-10-30T14:32:19.509625+00:00",
+      "duration_seconds": 5.469,
+      "storage": {
+        "persona_id": "fbce1f64-63d2-4986-86fd-1b7091dce3d0",
+        "event_counts": {
+          "identity.created": 1,
+          "wake": 2,
+          "frame.captured": 12,
+          "goal.updated": 6,
+          "rest": 5,
+          "checkpoint": 9,
+          "sleep": 2
+        },
+        "checkpoint_count": 9,
+        "captured_frames": 12,
+        "action_rows": 0,
+        "last_state": "ASLEEP",
+        "integrity_check": "ok"
+      },
+      "loopback_requests": 3
+    }
+  ],
+  "checks": {
+    "same_persona_across_two_runs": true,
+    "native_capture_frames": true,
+    "loopback_cognition_requests": true,
+    "durable_wake_sleep_checkpoints": true,
+    "no_action_intent_or_hooks": true,
+    "clean_shutdowns": true
+  },
+  "error": "PermissionError: [WinError 32] The process cannot access the file because it is being used by another process: 'C:\\\\Users\\\\HAPPYD~1\\\\AppData\\\\Local\\\\Temp\\\\soma-runtime-smoke-0p6oiy9y\\\\memory.sqlite3'",
+  "requests": [
+    {
+      "path": "/v1/chat/completions",
+      "bytes_discarded": 244241,
+      "received_at": "2026-10-30T14:32:10.134487+00:00"
+    },
+    {
+      "path": "/v1/chat/completions",
+      "bytes_discarded": 254580,
+      "received_at": "2026-10-30T14:32:11.798600+00:00"
+    },
+    {
+      "path": "/v1/chat/completions",
+      "bytes_discarded": 256754,
+      "received_at": "2026-10-30T14:32:13.564134+00:00"
+    },
+    {
+      "path": "/v1/chat/completions",
+      "bytes_discarded": 252349,
+      "received_at": "2026-10-30T14:32:15.332810+00:00"
+    },
+    {
+      "path": "/v1/chat/completions",
+      "bytes_discarded": 256646,
+      "received_at": "2026-10-30T14:32:17.056377+00:00"
+    },
+    {
+      "path": "/v1/chat/completions",
+      "bytes_discarded": 257025,
+      "received_at": "2026-10-30T14:32:18.739363+00:00"
+    }
+  ],
+  "ended_at": "2026-10-30T14:32:19.753170+00:00"
+}

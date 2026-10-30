@@ -1,0 +1,439 @@
+{
+  "scope": "source audit + isolated probes, NOT installed end-to-end or live GUI evidence",
+  "host": "Windows",
+  "repositories": {
+    "self-operating-computer": {
+      "sha": "eb8165a2efb1b34d66a28ecebf8ca97ae67cbb79",
+      "clone_command": "git clone --depth 1 --filter=blob:none https://github.com/OthersideAI/self-operating-computer.git .upstream/gui-audit/self-operating-computer",
+      "clone_observation": "first clone succeeded, exit 0, on 2026-10-30; no retry/failure observed",
+      "licenses": [
+        {
+          "path": "LICENSE",
+          "sha256": "5e7bd0cacdc62d1014060f10402c25c23901d79abf8882f536c6bd9ff619b443"
+        }
+      ],
+      "notice_files": [],
+      "python_modules_parsed": [
+        "operate/utils/operating_system.py",
+        "operate/utils/screenshot.py",
+        "operate/operate.py"
+      ],
+      "evidence": [
+        {
+          "file": "operate/utils/operating_system.py",
+          "marker": "pyautogui.write",
+          "lines": [
+            14
+          ]
+        },
+        {
+          "file": "operate/utils/operating_system.py",
+          "marker": "pyautogui.keyDown",
+          "lines": [
+            21
+          ]
+        },
+        {
+          "file": "operate/utils/operating_system.py",
+          "marker": "pyautogui.click",
+          "lines": [
+            61
+          ]
+        },
+        {
+          "file": "operate/utils/screenshot.py",
+          "marker": "pyautogui.screenshot",
+          "lines": [
+            15
+          ]
+        },
+        {
+          "file": "operate/utils/screenshot.py",
+          "marker": "Xlib.display.Display",
+          "lines": [
+            19
+          ]
+        },
+        {
+          "file": "operate/utils/screenshot.py",
+          "marker": "ImageGrab.grab",
+          "lines": [
+            21
+          ]
+        },
+        {
+          "file": "operate/operate.py",
+          "marker": "loop_count > 10",
+          "lines": [
+            120
+          ]
+        },
+        {
+          "file": "operate/operate.py",
+          "marker": "time.sleep(1)",
+          "lines": [
+            141
+          ]
+        }
+      ]
+    },
+    "Agent-S": {
+      "sha": "0fff0e634869dab72027435b4586e62300185d41",
+      "clone_command": "git clone --depth 1 --filter=blob:none https://github.com/simular-ai/Agent-S.git .upstream/gui-audit/Agent-S",
+      "clone_observation": "first clone succeeded, exit 0, on 2026-10-30; no retry/failure observed",
+      "licenses": [
+        {
+          "path": "LICENSE",
+          "sha256": "5ad8c213095c573921d7388edf93f6a9f54490b8ebf3b165ae8ef1947cf70846"
+        },
+        {
+          "path": "agent_s4/LICENSE",
+          "sha256": "5ad8c213095c573921d7388edf93f6a9f54490b8ebf3b165ae8ef1947cf70846"
+        },
+        {
+          "path": "osworld_setup/s4/agent_harness/prime-agent-runtime/LICENSE",
+          "sha256": "c8cc10fa1d92d1b1112f6099ef035cde87e42730a475e451582ff68bb2ad6683"
+        }
+      ],
+      "notice_files": [],
+      "python_modules_parsed": [
+        "gui_agents/s3/agents/grounding.py",
+        "gui_agents/s3/cli_app.py",
+        "gui_agents/s3/utils/common_utils.py",
+        "gui_agents/s3/utils/local_env.py"
+      ],
+      "evidence": [
+        {
+          "file": "gui_agents/s3/agents/grounding.py",
+          "marker": "wmctrl",
+          "lines": [
+            36,
+            46,
+            47
+          ]
+        },
+        {
+          "file": "gui_agents/s3/agents/grounding.py",
+          "marker": "import uno",
+          "lines": [
+            51
+          ]
+        },
+        {
+          "file": "gui_agents/s3/agents/grounding.py",
+          "marker": "pyperclip.copy",
+          "lines": [
+            455
+          ]
+        },
+        {
+          "file": "gui_agents/s3/agents/grounding.py",
+          "marker": "self.code_agent.execute",
+          "lines": [
+            583
+          ]
+        },
+        {
+          "file": "gui_agents/s3/cli_app.py",
+          "marker": "pyautogui.screenshot",
+          "lines": [
+            165
+          ]
+        },
+        {
+          "file": "gui_agents/s3/cli_app.py",
+          "marker": "exec(code[0])",
+          "lines": [
+            215
+          ]
+        },
+        {
+          "file": "gui_agents/s3/utils/common_utils.py",
+          "marker": "eval(code)",
+          "lines": [
+            31
+          ]
+        },
+        {
+          "file": "gui_agents/s3/utils/local_env.py",
+          "marker": "subprocess.run",
+          "lines": [
+            15,
+            50
+          ]
+        },
+        {
+          "file": "agent_s4/README.md",
+          "marker": "shadow interface",
+          "lines": [
+            5
+          ]
+        },
+        {
+          "file": "agent_s4/README.md",
+          "marker": "AWS",
+          "lines": [
+            7,
+            73
+          ]
+        }
+      ]
+    },
+    "UI-TARS-desktop": {
+      "sha": "3ac2cb8d946d78d5ff92ad17b318eaafa18c178c",
+      "clone_command": "git clone --depth 1 --filter=blob:none https://github.com/bytedance/UI-TARS-desktop.git .upstream/gui-audit/UI-TARS-desktop",
+      "clone_observation": "first clone succeeded, exit 0, on 2026-10-30; no retry/failure observed",
+      "licenses": [
+        {
+          "path": "LICENSE",
+          "sha256": "1eb85fc97224598dad1852b5d6483bbcf0aa8608790dcc657a5a2a761ae9c8c6"
+        },
+        {
+          "path": "multimodal/tarko/llm-client/LICENSE",
+          "sha256": "1eb85fc97224598dad1852b5d6483bbcf0aa8608790dcc657a5a2a761ae9c8c6"
+        }
+      ],
+      "notice_files": [],
+      "python_modules_parsed": [],
+      "evidence": [
+        {
+          "file": "packages/ui-tars/operators/nut-js/src/index.ts",
+          "marker": "screen.grab",
+          "lines": [
+            54
+          ]
+        },
+        {
+          "file": "packages/ui-tars/operators/nut-js/src/index.ts",
+          "marker": "clipboard.setContent",
+          "lines": [
+            245,
+            250
+          ]
+        },
+        {
+          "file": "packages/ui-tars/operators/nut-js/src/index.ts",
+          "marker": "mouse.drag",
+          "lines": [
+            231
+          ]
+        },
+        {
+          "file": "apps/ui-tars/src/main/agent/operator.ts",
+          "marker": "types: ['screen']",
+          "lines": [
+            53
+          ]
+        },
+        {
+          "file": "apps/ui-tars/src/main/agent/operator.ts",
+          "marker": "clipboard.readText",
+          "lines": [
+            94
+          ]
+        },
+        {
+          "file": "apps/ui-tars/src/main/agent/operator.ts",
+          "marker": "clipboard.writeText",
+          "lines": [
+            95,
+            100
+          ]
+        },
+        {
+          "file": "multimodal/gui-agent/operator-nutjs/src/NutJSOperator.ts",
+          "marker": "screen.grab",
+          "lines": [
+            40,
+            80
+          ]
+        },
+        {
+          "file": "multimodal/gui-agent/operator-nutjs/src/NutJSOperator.ts",
+          "marker": "clipboard.setContent",
+          "lines": [
+            197,
+            202
+          ]
+        },
+        {
+          "file": "apps/ui-tars/electron-builder.yml",
+          "marker": "AppImage",
+          "lines": [
+            34
+          ]
+        },
+        {
+          "file": "apps/ui-tars/electron-builder.yml",
+          "marker": "deb",
+          "lines": [
+            36
+          ]
+        }
+      ]
+    },
+    "computer_use_ootb": {
+      "sha": "21b05ae06de89700b998dc85d8ef64454f0d0291",
+      "clone_command": "git clone --depth 1 --filter=blob:none https://github.com/showlab/computer_use_ootb.git .upstream/gui-audit/computer_use_ootb",
+      "clone_observation": "first clone succeeded, exit 0, on 2026-10-30; no retry/failure observed",
+      "licenses": [
+        {
+          "path": "LICENSE",
+          "sha256": "e65b23f8817fbf1acdf5590430e693a44513a3d287a628e6578aa7942d7f0f6f"
+        }
+      ],
+      "notice_files": [],
+      "python_modules_parsed": [
+        "computer_use_demo/tools/screen_capture.py",
+        "computer_use_demo/tools/computer.py",
+        "computer_use_demo/executor/anthropic_executor.py",
+        "computer_use_demo/executor/showui_executor.py"
+      ],
+      "evidence": [
+        {
+          "file": "computer_use_demo/tools/screen_capture.py",
+          "marker": "ImageGrab.grab(bbox=bbox)",
+          "lines": [
+            108
+          ]
+        },
+        {
+          "file": "computer_use_demo/tools/screen_capture.py",
+          "marker": "xrandr",
+          "lines": [
+            81,
+            181
+          ]
+        },
+        {
+          "file": "computer_use_demo/tools/computer.py",
+          "marker": "pyautogui.typewrite",
+          "lines": [
+            276,
+            445
+          ]
+        },
+        {
+          "file": "computer_use_demo/tools/computer.py",
+          "marker": "async def shell",
+          "lines": [
+            586
+          ]
+        },
+        {
+          "file": "computer_use_demo/tools/computer.py",
+          "marker": "def scale_coordinates",
+          "lines": [
+            598
+          ]
+        },
+        {
+          "file": "computer_use_demo/executor/anthropic_executor.py",
+          "marker": "BashTool()",
+          "lines": [
+            27
+          ]
+        },
+        {
+          "file": "computer_use_demo/executor/anthropic_executor.py",
+          "marker": "EditTool()",
+          "lines": [
+            28
+          ]
+        },
+        {
+          "file": "computer_use_demo/executor/showui_executor.py",
+          "marker": "ComputerTool(selected_screen=selected_screen, is_scaling=False)",
+          "lines": [
+            35
+          ]
+        }
+      ]
+    }
+  },
+  "probes": {
+    "self-operating-computer": {
+      "level": "isolated mocked Python method execution",
+      "passed": true,
+      "events": [
+        [
+          "write",
+          [
+            "a"
+          ]
+        ],
+        [
+          "write",
+          [
+            "b"
+          ]
+        ],
+        [
+          "keyDown",
+          [
+            "ctrl"
+          ]
+        ],
+        [
+          "keyDown",
+          [
+            "a"
+          ]
+        ],
+        [
+          "keyUp",
+          [
+            "ctrl"
+          ]
+        ],
+        [
+          "keyUp",
+          [
+            "a"
+          ]
+        ]
+      ]
+    },
+    "Agent-S": {
+      "level": "isolated Python code generation; returned code was NEVER executed",
+      "passed": true,
+      "unicode_requires_clipboard": true,
+      "generated_installer_route": true
+    },
+    "UI-TARS-desktop": {
+      "level": "static TypeScript structural probe only; no JS runtime or desktop run",
+      "passed": true,
+      "actions": [
+        "click",
+        "right_click",
+        "middle_click",
+        "double_click",
+        "mouse_down",
+        "mouse_up",
+        "mouse_move",
+        "drag",
+        "scroll",
+        "type",
+        "hotkey",
+        "press",
+        "release",
+        "wait",
+        "call_user",
+        "finished"
+      ],
+      "windows_clipboard_route_present": true
+    },
+    "computer_use_ootb": {
+      "level": "isolated pure Python coordinate method execution",
+      "passed": true,
+      "midpoint": [
+        960,
+        540
+      ],
+      "out_of_target_range_maps_outside_screen": [
+        2108,
+        422
+      ]
+    }
+  }
+}

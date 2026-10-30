@@ -1,0 +1,14 @@
+.venv/
+.upstream/
+.tools/
+.venv-linux/
+.firecrawl/
+__pycache__/
+*.pyc
+.pytest_cache/
+build/
+dist/
+artifacts/
+*.egg-info/
+*.spec
+!packaging/soma.spec

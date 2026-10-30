@@ -1,0 +1,253 @@
+{
+  "started_at": "2026-10-30T14:12:26.051789+00:00",
+  "passed": false,
+  "scope": "real native input into owned Qt fixture; actual monitor pixels cropped to fixture",
+  "checks": {},
+  "limitations": [
+    "No model inference or external-application task success tested",
+    "Current physical display configuration only; synthetic scaling tests are separate",
+    "Demonstration hooks accept injected events only during the visible synthetic teacher phase",
+    "Screenshots are fixture crops of real port captures; other desktop pixels are not saved"
+  ],
+  "geometry": {
+    "capture": {
+      "width": 1080,
+      "height": 2280,
+      "x": 0,
+      "y": 0,
+      "monitors": [
+        {
+          "x": 0,
+          "y": 0,
+          "width": 1080,
+          "height": 2280
+        }
+      ],
+      "frame_id": "170e7940-ffa4-4281-a79e-3771d2cf9294",
+      "timestamp": "2026-10-30T14:12:27.651805+00:00"
+    },
+    "fixture_logical": [
+      0,
+      0,
+      540,
+      1140
+    ],
+    "fixture_physical": [
+      0,
+      0,
+      1080,
+      2280
+    ],
+    "scale_x": 2.0,
+    "scale_y": 2.0,
+    "qt_dpr": 2.0
+  },
+  "error": "AssertionError: '🦆Привіт, SOMA '",
+  "fixture_events": [
+    {
+      "kind": "focus_in"
+    },
+    {
+      "kind": "mouse_move",
+      "x": 70,
+      "y": 70
+    },
+    {
+      "kind": "mouse_down",
+      "x": 70,
+      "y": 70
+    },
+    {
+      "kind": "mouse_up",
+      "x": 70,
+      "y": 70
+    },
+    {
+      "kind": "mouse_move",
+      "x": 140,
+      "y": 70
+    },
+    {
+      "kind": "mouse_down",
+      "x": 140,
+      "y": 70
+    },
+    {
+      "kind": "mouse_up",
+      "x": 140,
+      "y": 70
+    },
+    {
+      "kind": "double_click",
+      "x": 140,
+      "y": 70
+    },
+    {
+      "kind": "mouse_up",
+      "x": 140,
+      "y": 70
+    },
+    {
+      "kind": "mouse_move",
+      "x": 210,
+      "y": 80
+    },
+    {
+      "kind": "mouse_down",
+      "x": 210,
+      "y": 80
+    },
+    {
+      "kind": "drag_move",
+      "x": 464,
+      "y": 204
+    },
+    {
+      "kind": "drag_move",
+      "x": 478,
+      "y": 210
+    },
+    {
+      "kind": "mouse_up",
+      "x": 478,
+      "y": 210
+    },
+    {
+      "kind": "wheel",
+      "dx": 0,
+      "dy": 240
+    },
+    {
+      "kind": "key_down",
+      "key": 31,
+      "text": "П"
+    },
+    {
+      "kind": "key_up",
+      "key": 1055,
+      "text": "П"
+    },
+    {
+      "kind": "key_down",
+      "key": 1056,
+      "text": "р"
+    },
+    {
+      "kind": "key_up",
+      "key": 1056,
+      "text": "р"
+    },
+    {
+      "kind": "key_down",
+      "key": 1048,
+      "text": "и"
+    },
+    {
+      "kind": "key_up",
+      "key": 1048,
+      "text": "и"
+    },
+    {
+      "kind": "key_down",
+      "key": 1042,
+      "text": "в"
+    },
+    {
+      "kind": "key_up",
+      "key": 1042,
+      "text": "в"
+    },
+    {
+      "kind": "key_down",
+      "key": 1030,
+      "text": "і"
+    },
+    {
+      "kind": "key_up",
+      "key": 1030,
+      "text": "і"
+    },
+    {
+      "kind": "key_down",
+      "key": 1058,
+      "text": "т"
+    },
+    {
+      "kind": "key_up",
+      "key": 1058,
+      "text": "т"
+    },
+    {
+      "kind": "key_down",
+      "key": 44,
+      "text": ","
+    },
+    {
+      "kind": "key_up",
+      "key": 1055,
+      "text": ","
+    },
+    {
+      "kind": "key_down",
+      "key": 32,
+      "text": " "
+    },
+    {
+      "kind": "key_up",
+      "key": 32,
+      "text": " "
+    },
+    {
+      "kind": "key_down",
+      "key": 83,
+      "text": "S"
+    },
+    {
+      "kind": "key_up",
+      "key": 1055,
+      "text": "S"
+    },
+    {
+      "kind": "key_down",
+      "key": 79,
+      "text": "O"
+    },
+    {
+      "kind": "key_up",
+      "key": 1055,
+      "text": "O"
+    },
+    {
+      "kind": "key_down",
+      "key": 77,
+      "text": "M"
+    },
+    {
+      "kind": "key_up",
+      "key": 1055,
+      "text": "M"
+    },
+    {
+      "kind": "key_down",
+      "key": 65,
+      "text": "A"
+    },
+    {
+      "kind": "key_up",
+      "key": 1055,
+      "text": "A"
+    },
+    {
+      "kind": "key_down",
+      "key": 32,
+      "text": " "
+    },
+    {
+      "kind": "key_up",
+      "key": 32,
+      "text": " "
+    }
+  ],
+  "ended_at": "2026-10-30T14:12:29.252445+00:00",
+  "duration_seconds": 2.781
+}

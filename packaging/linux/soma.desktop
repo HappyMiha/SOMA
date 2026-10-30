@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=SOMA / SOMIK
+Comment=Persistent digital personality in its own desktop session
+Exec=/opt/soma/SOMA
+Icon=applications-science
+Terminal=false
+Categories=Utility;
+StartupNotify=true
+X-GNOME-Autostart-enabled=true

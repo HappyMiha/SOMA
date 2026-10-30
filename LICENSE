@@ -1,0 +1,6 @@
+Copyright (c) 2026 SOMA contributors.
+All rights reserved pending the project owner's choice of license.
+
+No license for the new SOMA source code is granted by this file. Third-party
+components retain their respective licenses, included in the distribution.
+Audited upstream projects are references, not vendored runtime dependencies.

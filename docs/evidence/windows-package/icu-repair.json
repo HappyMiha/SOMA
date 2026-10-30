@@ -1,0 +1,62 @@
+{
+  "diagnosis": "PyInstaller selected Poppler ICU78 from PATH for Qt unversioned Windows-system ICU imports",
+  "qt_core_sha256": "f57ed38afd95d0306cca9d88d997f639f70c7628a4f1f064eae291d579487121",
+  "required_icu_exports": [
+    "UCNV_FROM_U_CALLBACK_SUBSTITUTE",
+    "UCNV_TO_U_CALLBACK_SUBSTITUTE",
+    "ucnv_cbFromUWriteUChars",
+    "ucnv_cbToUWriteUChars",
+    "ucnv_close",
+    "ucnv_countAvailable",
+    "ucnv_fromUCountPending",
+    "ucnv_fromUnicode",
+    "ucnv_getAvailableName",
+    "ucnv_getFromUCallBack",
+    "ucnv_getMaxCharSize",
+    "ucnv_getName",
+    "ucnv_getStandardName",
+    "ucnv_getToUCallBack",
+    "ucnv_open",
+    "ucnv_reset",
+    "ucnv_setFromUCallBack",
+    "ucnv_setToUCallBack",
+    "ucnv_toUCountPending",
+    "ucnv_toUnicode"
+  ],
+  "rejected": {
+    "path": "D:\\Lokvetia\\SOMA\\artifacts\\win32\\icuuc-poppler-rejected.dll",
+    "bytes": 2744112,
+    "sha256": "03971678fe15d8691c80af585d1c09e76d7ab7b7d98a6e35e666697ed647ec4c",
+    "missing_required_exports": [
+      "UCNV_FROM_U_CALLBACK_SUBSTITUTE",
+      "UCNV_TO_U_CALLBACK_SUBSTITUTE",
+      "ucnv_cbFromUWriteUChars",
+      "ucnv_cbToUWriteUChars",
+      "ucnv_close",
+      "ucnv_countAvailable",
+      "ucnv_fromUCountPending",
+      "ucnv_fromUnicode",
+      "ucnv_getAvailableName",
+      "ucnv_getFromUCallBack",
+      "ucnv_getMaxCharSize",
+      "ucnv_getName",
+      "ucnv_getStandardName",
+      "ucnv_getToUCallBack",
+      "ucnv_open",
+      "ucnv_reset",
+      "ucnv_setFromUCallBack",
+      "ucnv_setToUCallBack",
+      "ucnv_toUCountPending",
+      "ucnv_toUnicode"
+    ]
+  },
+  "windows_system": {
+    "path": "C:\\Windows\\System32\\icuuc.dll",
+    "bytes": 29696,
+    "sha256": "e76201d65fc58d1db0ec99bc8e875f47d692bcaa16bb6448b197bc86c08d1816",
+    "missing_required_exports": []
+  },
+  "source_from_analysis_toc": "C:/Users/HappyDucky02/.cache/codex-runtimes/codex-primary-runtime/dependencies/native/poppler/Library/bin/icuuc.dll",
+  "repair": "Windows-only exclusion of icuuc.dll and orphan icudt78.dll; resolve Windows system ICU",
+  "focused_native_test": "runtime-smoke.json currently records a diagnostically repaired installed copy; final installer rebuild and fresh smoke required"
+}

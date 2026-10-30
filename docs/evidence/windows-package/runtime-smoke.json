@@ -1,0 +1,126 @@
+{
+  "started_at": "2026-10-30T14:41:36.552490+00:00",
+  "passed": true,
+  "mode": "packaged",
+  "cognition": "deterministic loopback wait stub; no AI/VLM screenshot interpretation",
+  "scope": "two-run native UI/body capture/provider/storage/shutdown integration",
+  "screenshots": "App-owned temporary frames only; harness never reads or decodes image files or HTTP image content",
+  "limitations": [
+    "No VLM autonomy, workflow competence or correspondence established",
+    "No native input or demonstration hooks requested",
+    "Current host/session only"
+  ],
+  "runs": [
+    {
+      "run": 1,
+      "started_at": "2026-10-30T14:41:36.568951+00:00",
+      "command": [
+        "D:\\Lokvetia\\SOMA\\artifacts\\win32\\install-test\\SOMA.exe",
+        "--smoke-seconds",
+        "5",
+        "--smoke-life",
+        "--data-dir",
+        "C:\\Users\\HAPPYD~1\\AppData\\Local\\Temp\\soma-runtime-smoke-850kesux"
+      ],
+      "stdout_log": "run-1.stdout.log",
+      "stderr_log": "run-1.stderr.log",
+      "exit_code": 0,
+      "ended_at": "2026-10-30T14:41:41.954003+00:00",
+      "duration_seconds": 5.375,
+      "storage": {
+        "persona_id": "b25eb33a-2e1a-4db8-baaf-24e429af5c37",
+        "event_counts": {
+          "identity.created": 1,
+          "wake": 1,
+          "frame.captured": 6,
+          "goal.updated": 3,
+          "rest": 3,
+          "checkpoint": 5,
+          "sleep": 1
+        },
+        "checkpoint_count": 5,
+        "captured_frames": 6,
+        "action_rows": 0,
+        "last_state": "ASLEEP",
+        "integrity_check": "ok"
+      },
+      "loopback_requests": 3
+    },
+    {
+      "run": 2,
+      "started_at": "2026-10-30T14:41:41.957334+00:00",
+      "command": [
+        "D:\\Lokvetia\\SOMA\\artifacts\\win32\\install-test\\SOMA.exe",
+        "--smoke-seconds",
+        "5",
+        "--smoke-life",
+        "--data-dir",
+        "C:\\Users\\HAPPYD~1\\AppData\\Local\\Temp\\soma-runtime-smoke-850kesux"
+      ],
+      "stdout_log": "run-2.stdout.log",
+      "stderr_log": "run-2.stderr.log",
+      "exit_code": 0,
+      "ended_at": "2026-10-30T14:41:47.322259+00:00",
+      "duration_seconds": 5.359,
+      "storage": {
+        "persona_id": "b25eb33a-2e1a-4db8-baaf-24e429af5c37",
+        "event_counts": {
+          "identity.created": 1,
+          "wake": 2,
+          "frame.captured": 12,
+          "goal.updated": 6,
+          "rest": 6,
+          "checkpoint": 10,
+          "sleep": 2
+        },
+        "checkpoint_count": 10,
+        "captured_frames": 12,
+        "action_rows": 0,
+        "last_state": "ASLEEP",
+        "integrity_check": "ok"
+      },
+      "loopback_requests": 3
+    }
+  ],
+  "checks": {
+    "same_persona_across_two_runs": true,
+    "native_capture_frames": true,
+    "loopback_cognition_requests": true,
+    "durable_wake_sleep_checkpoints": true,
+    "no_action_intent_or_hooks": true,
+    "clean_shutdowns": true
+  },
+  "requests": [
+    {
+      "path": "/v1/chat/completions",
+      "bytes_discarded": 245217,
+      "received_at": "2026-10-30T14:41:37.778135+00:00"
+    },
+    {
+      "path": "/v1/chat/completions",
+      "bytes_discarded": 254724,
+      "received_at": "2026-10-30T14:41:39.427700+00:00"
+    },
+    {
+      "path": "/v1/chat/completions",
+      "bytes_discarded": 257542,
+      "received_at": "2026-10-30T14:41:41.052064+00:00"
+    },
+    {
+      "path": "/v1/chat/completions",
+      "bytes_discarded": 252233,
+      "received_at": "2026-10-30T14:41:42.925598+00:00"
+    },
+    {
+      "path": "/v1/chat/completions",
+      "bytes_discarded": 256805,
+      "received_at": "2026-10-30T14:41:44.526998+00:00"
+    },
+    {
+      "path": "/v1/chat/completions",
+      "bytes_discarded": 257193,
+      "received_at": "2026-10-30T14:41:46.137126+00:00"
+    }
+  ],
+  "ended_at": "2026-10-30T14:41:47.658222+00:00"
+}

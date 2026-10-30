@@ -1,0 +1,108 @@
+{
+  "verified_at": "2026-10-30T14:42:04+00:00",
+  "passed": true,
+  "platform": {
+    "distribution": "Ubuntu 24.04.1 LTS amd64",
+    "host": "WSL2, Linux 6.18.40.1-microsoft-standard-WSL2",
+    "python": "3.12.3",
+    "glibc": "2.39",
+    "display": "Dedicated Xvfb 1280x900x24, xorg input backend; WAYLAND_DISPLAY unset and QT_QPA_PLATFORM=xcb"
+  },
+  "artifact": {
+    "path": "artifacts/linux/SOMA-0.1.0-linux-amd64.deb",
+    "size_bytes": 62753918,
+    "sha256": "3f9b16723968ddd578ee2916f7cee511ea27f51e72238794ff9268b48607f399",
+    "package": "soma-desktop",
+    "version": "0.1.0",
+    "architecture": "amd64",
+    "minimum_glibc": "2.38 (readelf requirement from bundled libpython; enforced by libc6 dependency)",
+    "native_binary": "dist/linux/SOMA/SOMA",
+    "isolated_extracted_binary": "artifacts/linux/deb-extracted-final/opt/soma/SOMA",
+    "host_installation_or_autostart_performed": false,
+    "inspection": {
+      "dpkg_deb_info": true,
+      "dpkg_deb_contents": true,
+      "dpkg_deb_extraction": true,
+      "sha256sum_check": true,
+      "archive_root_ownership": "root/root",
+      "archive_directory_and_executable_modes": "0755",
+      "archive_regular_data_modes": "0644",
+      "desktop_and_autostart_entries_present": true
+    }
+  },
+  "tests": {
+    "unit_suite": {"passed": 106, "subtests_passed": 15, "duration_seconds": 8.86},
+    "compileall": true,
+    "desktop_e2e_help": true,
+    "isolated_x11": {
+      "report": "docs/evidence/linux-x11/report.json",
+      "passed": true,
+      "native_unicode_keyboard": true,
+      "native_hotkey": true,
+      "native_mouse_click_double_drag_scroll": true,
+      "pixel_capture_observes_effect": true,
+      "teaching_inhibits_body": true,
+      "native_demonstration_hooks": true,
+      "private_pixels_and_inputs_omitted": true,
+      "listeners_stop": true,
+      "typed_unicode": "Привіт SOMA 🦆",
+      "recorded_demonstration_steps": 16
+    },
+    "final_extracted_package_ui_smoke": {
+      "exit_code": 0,
+      "bounded_ui_seconds": 3,
+      "whole_command_wall_seconds": 5.66,
+      "whole_command_max_rss_kib": 73268,
+      "resource_scope": "GNU time around Xvfb plus packaged UI smoke; not an autonomy or inference benchmark"
+    },
+    "final_extracted_package_runtime_smoke": {
+      "report": "docs/evidence/linux-package/runtime-smoke.json",
+      "passed": true,
+      "cognition": "Deterministic localhost wait-only stub; no AI or VLM interpretation",
+      "runs": 2,
+      "same_persona_id": "412923c6-195b-454a-8bd8-c6f1ffd97dde",
+      "request_count": 8,
+      "captured_frame_counts": [8, 16],
+      "checkpoint_counts": [6, 12],
+      "wake_and_sleep_counts_after_second_run": [2, 2],
+      "identity_created_count": 1,
+      "action_intent_count": 0,
+      "demonstration_started_count": 0,
+      "last_state": "ASLEEP",
+      "sqlite_integrity": "ok",
+      "both_exit_codes": [0, 0]
+    }
+  },
+  "distribution_materials": {
+    "sbom": "artifacts/linux/sbom.cdx.json",
+    "sbom_format": "CycloneDX 1.5 build-environment inventory",
+    "sbom_component_count": 39,
+    "dependency_lock": "artifacts/linux/requirements-linux.lock.txt",
+    "licenses_directory": "artifacts/linux/licenses",
+    "verified_inside_deb": [
+      "opt/soma/_internal/licenses/pynput/COPYING.LGPL",
+      "opt/soma/_internal/licenses/required-license-texts/GPL-3.0.txt",
+      "opt/soma/_internal/licenses/required-license-texts/LGPL-3.0.txt",
+      "opt/soma/_internal/sbom.cdx.json"
+    ]
+  },
+  "logs": [
+    "artifacts/linux-build.log",
+    "artifacts/linux/deb-repack-final.log",
+    "artifacts/linux/unit-tests-final.log",
+    "artifacts/linux/x11-probe-final.log",
+    "artifacts/linux/deb-info-final.txt",
+    "artifacts/linux/deb-contents-final.txt",
+    "artifacts/linux/package-ui-smoke-final.log",
+    "artifacts/linux/package-life-smoke-final.log"
+  ],
+  "limitations": [
+    "Validation used virtual X11 in WSL Ubuntu; no physical Linux monitor, multi-monitor DPI, Wayland or WSLg validation.",
+    "No real VLM inference, external application workflow, correspondence, or long-duration autonomous competence was tested.",
+    "No physical shutdown/reboot/suspend/lock transition was tested. WSL emitted a login1 D-Bus connection warning; physical Linux lifecycle notification behavior remains unvalidated.",
+    "The package was inspected and extracted in isolation; package-manager installation, system autostart and removal on a clean separate Linux machine were not tested.",
+    "The declared glibc floor is 2.38; compatibility beyond this Ubuntu 24.04.1 environment is unverified.",
+    "PyInstaller reported optional libxcb-errors.so.0 unavailable; X11 native and packaged smoke checks passed without it.",
+    "These measurements do not establish the specified laptop resource, energy, local-model or full benchmark acceptance gates."
+  ]
+}

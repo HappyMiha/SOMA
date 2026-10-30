@@ -1,0 +1,425 @@
+{
+  "started_at": "2026-10-30T14:13:13.840302+00:00",
+  "passed": false,
+  "scope": "real native input into owned Qt fixture; actual monitor pixels cropped to fixture",
+  "checks": {
+    "native_ukrainian_and_emoji": true
+  },
+  "limitations": [
+    "No model inference or external-application task success tested",
+    "Current physical display configuration only; synthetic scaling tests are separate",
+    "Demonstration hooks accept injected events only during the visible synthetic teacher phase",
+    "Screenshots are fixture crops of real port captures; other desktop pixels are not saved"
+  ],
+  "geometry": {
+    "capture": {
+      "width": 1080,
+      "height": 2280,
+      "x": 0,
+      "y": 0,
+      "monitors": [
+        {
+          "x": 0,
+          "y": 0,
+          "width": 1080,
+          "height": 2280
+        }
+      ],
+      "frame_id": "f0f2da88-3561-4562-affe-546fd26e3009",
+      "timestamp": "2026-10-30T14:13:15.096858+00:00"
+    },
+    "fixture_logical": [
+      0,
+      0,
+      540,
+      1140
+    ],
+    "fixture_physical": [
+      0,
+      0,
+      1080,
+      2280
+    ],
+    "scale_x": 2.0,
+    "scale_y": 2.0,
+    "qt_dpr": 2.0
+  },
+  "error": "AssertionError: '🦆Перевірено '",
+  "fixture_events": [
+    {
+      "kind": "focus_in"
+    },
+    {
+      "kind": "mouse_move",
+      "x": 70,
+      "y": 70
+    },
+    {
+      "kind": "mouse_down",
+      "x": 70,
+      "y": 70
+    },
+    {
+      "kind": "mouse_up",
+      "x": 70,
+      "y": 70
+    },
+    {
+      "kind": "mouse_move",
+      "x": 140,
+      "y": 70
+    },
+    {
+      "kind": "mouse_down",
+      "x": 140,
+      "y": 70
+    },
+    {
+      "kind": "mouse_up",
+      "x": 140,
+      "y": 70
+    },
+    {
+      "kind": "double_click",
+      "x": 140,
+      "y": 70
+    },
+    {
+      "kind": "mouse_up",
+      "x": 140,
+      "y": 70
+    },
+    {
+      "kind": "mouse_move",
+      "x": 210,
+      "y": 80
+    },
+    {
+      "kind": "mouse_down",
+      "x": 210,
+      "y": 80
+    },
+    {
+      "kind": "drag_move",
+      "x": 250,
+      "y": 100
+    },
+    {
+      "kind": "drag_move",
+      "x": 277,
+      "y": 112
+    },
+    {
+      "kind": "drag_move",
+      "x": 304,
+      "y": 126
+    },
+    {
+      "kind": "drag_move",
+      "x": 330,
+      "y": 138
+    },
+    {
+      "kind": "drag_move",
+      "x": 358,
+      "y": 152
+    },
+    {
+      "kind": "drag_move",
+      "x": 384,
+      "y": 164
+    },
+    {
+      "kind": "drag_move",
+      "x": 411,
+      "y": 178
+    },
+    {
+      "kind": "drag_move",
+      "x": 438,
+      "y": 190
+    },
+    {
+      "kind": "drag_move",
+      "x": 464,
+      "y": 204
+    },
+    {
+      "kind": "drag_move",
+      "x": 478,
+      "y": 210
+    },
+    {
+      "kind": "mouse_up",
+      "x": 478,
+      "y": 210
+    },
+    {
+      "kind": "wheel",
+      "dx": 0,
+      "dy": 240
+    },
+    {
+      "kind": "key_down",
+      "key": 31,
+      "text": "П"
+    },
+    {
+      "kind": "key_up",
+      "key": 1055,
+      "text": "П"
+    },
+    {
+      "kind": "key_down",
+      "key": 1056,
+      "text": "р"
+    },
+    {
+      "kind": "key_up",
+      "key": 1056,
+      "text": "р"
+    },
+    {
+      "kind": "key_down",
+      "key": 1048,
+      "text": "и"
+    },
+    {
+      "kind": "key_up",
+      "key": 1048,
+      "text": "и"
+    },
+    {
+      "kind": "key_down",
+      "key": 1042,
+      "text": "в"
+    },
+    {
+      "kind": "key_up",
+      "key": 1042,
+      "text": "в"
+    },
+    {
+      "kind": "key_down",
+      "key": 1030,
+      "text": "і"
+    },
+    {
+      "kind": "key_up",
+      "key": 1030,
+      "text": "і"
+    },
+    {
+      "kind": "key_down",
+      "key": 1058,
+      "text": "т"
+    },
+    {
+      "kind": "key_up",
+      "key": 1058,
+      "text": "т"
+    },
+    {
+      "kind": "key_down",
+      "key": 44,
+      "text": ","
+    },
+    {
+      "kind": "key_up",
+      "key": 1055,
+      "text": ","
+    },
+    {
+      "kind": "key_down",
+      "key": 32,
+      "text": " "
+    },
+    {
+      "kind": "key_up",
+      "key": 32,
+      "text": " "
+    },
+    {
+      "kind": "key_down",
+      "key": 83,
+      "text": "S"
+    },
+    {
+      "kind": "key_up",
+      "key": 1055,
+      "text": "S"
+    },
+    {
+      "kind": "key_down",
+      "key": 79,
+      "text": "O"
+    },
+    {
+      "kind": "key_up",
+      "key": 1055,
+      "text": "O"
+    },
+    {
+      "kind": "key_down",
+      "key": 77,
+      "text": "M"
+    },
+    {
+      "kind": "key_up",
+      "key": 1055,
+      "text": "M"
+    },
+    {
+      "kind": "key_down",
+      "key": 65,
+      "text": "A"
+    },
+    {
+      "kind": "key_up",
+      "key": 1055,
+      "text": "A"
+    },
+    {
+      "kind": "key_down",
+      "key": 32,
+      "text": " "
+    },
+    {
+      "kind": "key_up",
+      "key": 32,
+      "text": " "
+    },
+    {
+      "kind": "key_down",
+      "key": 16777249,
+      "text": ""
+    },
+    {
+      "kind": "key_down",
+      "key": 65,
+      "text": "a"
+    },
+    {
+      "kind": "key_up",
+      "key": 1055,
+      "text": "a"
+    },
+    {
+      "kind": "key_up",
+      "key": 16777249,
+      "text": ""
+    },
+    {
+      "kind": "key_down",
+      "key": 31,
+      "text": "П"
+    },
+    {
+      "kind": "key_up",
+      "key": 1055,
+      "text": "П"
+    },
+    {
+      "kind": "key_down",
+      "key": 1045,
+      "text": "е"
+    },
+    {
+      "kind": "key_up",
+      "key": 1045,
+      "text": "е"
+    },
+    {
+      "kind": "key_down",
+      "key": 1056,
+      "text": "р"
+    },
+    {
+      "kind": "key_up",
+      "key": 1056,
+      "text": "р"
+    },
+    {
+      "kind": "key_down",
+      "key": 1045,
+      "text": "е"
+    },
+    {
+      "kind": "key_up",
+      "key": 1045,
+      "text": "е"
+    },
+    {
+      "kind": "key_down",
+      "key": 1042,
+      "text": "в"
+    },
+    {
+      "kind": "key_up",
+      "key": 1042,
+      "text": "в"
+    },
+    {
+      "kind": "key_down",
+      "key": 1030,
+      "text": "і"
+    },
+    {
+      "kind": "key_up",
+      "key": 1030,
+      "text": "і"
+    },
+    {
+      "kind": "key_down",
+      "key": 1056,
+      "text": "р"
+    },
+    {
+      "kind": "key_up",
+      "key": 1056,
+      "text": "р"
+    },
+    {
+      "kind": "key_down",
+      "key": 1045,
+      "text": "е"
+    },
+    {
+      "kind": "key_up",
+      "key": 1045,
+      "text": "е"
+    },
+    {
+      "kind": "key_down",
+      "key": 1053,
+      "text": "н"
+    },
+    {
+      "kind": "key_up",
+      "key": 1053,
+      "text": "н"
+    },
+    {
+      "kind": "key_down",
+      "key": 1054,
+      "text": "о"
+    },
+    {
+      "kind": "key_up",
+      "key": 1054,
+      "text": "о"
+    },
+    {
+      "kind": "key_down",
+      "key": 32,
+      "text": " "
+    },
+    {
+      "kind": "key_up",
+      "key": 32,
+      "text": " "
+    }
+  ],
+  "ended_at": "2026-10-30T14:13:17.110145+00:00",
+  "duration_seconds": 3.0
+}

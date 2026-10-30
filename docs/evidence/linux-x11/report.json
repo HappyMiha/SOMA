@@ -1,0 +1,56 @@
+{
+  "started_at": "2026-10-30T14:40:15.240596+00:00",
+  "passed": true,
+  "scope": "Synthetic native input/capture on a dedicated virtual Xvfb X11 display in WSL Ubuntu",
+  "display": ":99",
+  "checks": {
+    "native_unicode_keyboard": true,
+    "native_hotkey": true,
+    "native_mouse_click_double_drag_scroll": true,
+    "pixel_capture_observes_effect": true,
+    "teaching_inhibits_body": true,
+    "native_demonstration_hooks": true,
+    "private_pixels_and_inputs_omitted": true,
+    "listeners_stop": true
+  },
+  "limitations": [
+    "Not a physical Linux monitor, Wayland or WSLg test",
+    "No model inference or external application workflow"
+  ],
+  "geometry": {
+    "width": 1280,
+    "height": 900,
+    "x": 0,
+    "y": 0,
+    "monitors": [
+      {
+        "x": 0,
+        "y": 0,
+        "width": 1280,
+        "height": 900
+      }
+    ],
+    "frame_id": "bf46d1e6-8d1f-43ff-9a7e-01314314597e",
+    "timestamp": "2026-10-30T14:40:17.057584+00:00"
+  },
+  "backend": "xorg",
+  "fixture_geometry": {
+    "width": 1280,
+    "height": 900,
+    "dpr": 1.0
+  },
+  "typed_unicode": "Привіт SOMA 🦆",
+  "demonstration_steps": 16,
+  "fixture_event_counts": {
+    "focus_in": 1,
+    "mouse_move": 3,
+    "mouse_down": 3,
+    "mouse_up": 4,
+    "double_click": 1,
+    "drag_move": 20,
+    "wheel": 2,
+    "key_down": 47,
+    "key_up": 47
+  },
+  "finished_at": "2026-10-30T14:40:19.754022+00:00"
+}

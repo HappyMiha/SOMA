@@ -1,0 +1,189 @@
+{
+  "id": "6cecaa83-4aed-453b-ac25-6eb653f8be74",
+  "started_at": "2026-10-30T14:13:43.093332+00:00",
+  "ended_at": "2026-10-30T14:13:43.806521+00:00",
+  "clock": "monotonic",
+  "frames": [
+    {
+      "frame_id": "48800416-ff55-4776-a27d-6ddf51aeb47b",
+      "path": "D:\\Lokvetia\\SOMA\\docs\\evidence\\windows-desktop\\teaching-memory\\frames\\063e7cfcc2f921ca649244f1fd15ec15d5337f93387a80913a03cd34e161f30b.png",
+      "captured_at": 111963.703,
+      "available_at": 111963.828,
+      "geometry": {
+        "width": 1080,
+        "height": 2280,
+        "x": 0,
+        "y": 0,
+        "monitors": [
+          {
+            "x": 0,
+            "y": 0,
+            "width": 1080,
+            "height": 2280
+          }
+        ],
+        "frame_id": "48800416-ff55-4776-a27d-6ddf51aeb47b",
+        "timestamp": "2026-10-30T14:13:43.204172+00:00"
+      }
+    },
+    {
+      "frame_id": "3aba2bfc-0e8c-41cf-8cb2-5ecdfb2ed02f",
+      "path": "D:\\Lokvetia\\SOMA\\docs\\evidence\\windows-desktop\\teaching-memory\\frames\\c88800916c3a76d0ae26cf4630a12584d8054c140c689367ee571cfe52c9b64f.png",
+      "captured_at": 111964.265,
+      "available_at": 111964.406,
+      "geometry": {
+        "width": 1080,
+        "height": 2280,
+        "x": 0,
+        "y": 0,
+        "monitors": [
+          {
+            "x": 0,
+            "y": 0,
+            "width": 1080,
+            "height": 2280
+          }
+        ],
+        "frame_id": "3aba2bfc-0e8c-41cf-8cb2-5ecdfb2ed02f",
+        "timestamp": "2026-10-30T14:13:43.772916+00:00"
+      }
+    }
+  ],
+  "steps": [
+    {
+      "before_frame_id": "48800416-ff55-4776-a27d-6ddf51aeb47b",
+      "after_frame_id": "3aba2bfc-0e8c-41cf-8cb2-5ecdfb2ed02f",
+      "input": {
+        "kind": "key_down",
+        "args": {
+          "key": "Key.space"
+        },
+        "timestamp": 111963.843
+      }
+    },
+    {
+      "before_frame_id": "48800416-ff55-4776-a27d-6ddf51aeb47b",
+      "after_frame_id": "3aba2bfc-0e8c-41cf-8cb2-5ecdfb2ed02f",
+      "input": {
+        "kind": "key_up",
+        "args": {
+          "key": "Key.space"
+        },
+        "timestamp": 111963.843
+      }
+    },
+    {
+      "before_frame_id": "48800416-ff55-4776-a27d-6ddf51aeb47b",
+      "after_frame_id": "3aba2bfc-0e8c-41cf-8cb2-5ecdfb2ed02f",
+      "input": {
+        "kind": "key_down",
+        "args": {
+          "key": "П"
+        },
+        "timestamp": 111963.859
+      }
+    },
+    {
+      "before_frame_id": "48800416-ff55-4776-a27d-6ddf51aeb47b",
+      "after_frame_id": "3aba2bfc-0e8c-41cf-8cb2-5ecdfb2ed02f",
+      "input": {
+        "kind": "key_up",
+        "args": {
+          "key": "П"
+        },
+        "timestamp": 111963.859
+      }
+    },
+    {
+      "before_frame_id": "48800416-ff55-4776-a27d-6ddf51aeb47b",
+      "after_frame_id": "3aba2bfc-0e8c-41cf-8cb2-5ecdfb2ed02f",
+      "input": {
+        "kind": "key_down",
+        "args": {
+          "key": "о"
+        },
+        "timestamp": 111963.875
+      }
+    },
+    {
+      "before_frame_id": "48800416-ff55-4776-a27d-6ddf51aeb47b",
+      "after_frame_id": "3aba2bfc-0e8c-41cf-8cb2-5ecdfb2ed02f",
+      "input": {
+        "kind": "key_up",
+        "args": {
+          "key": "о"
+        },
+        "timestamp": 111963.875
+      }
+    },
+    {
+      "before_frame_id": "48800416-ff55-4776-a27d-6ddf51aeb47b",
+      "after_frame_id": "3aba2bfc-0e8c-41cf-8cb2-5ecdfb2ed02f",
+      "input": {
+        "kind": "key_down",
+        "args": {
+          "key": "к"
+        },
+        "timestamp": 111963.89
+      }
+    },
+    {
+      "before_frame_id": "48800416-ff55-4776-a27d-6ddf51aeb47b",
+      "after_frame_id": "3aba2bfc-0e8c-41cf-8cb2-5ecdfb2ed02f",
+      "input": {
+        "kind": "key_up",
+        "args": {
+          "key": "к"
+        },
+        "timestamp": 111963.89
+      }
+    },
+    {
+      "before_frame_id": "48800416-ff55-4776-a27d-6ddf51aeb47b",
+      "after_frame_id": "3aba2bfc-0e8c-41cf-8cb2-5ecdfb2ed02f",
+      "input": {
+        "kind": "key_down",
+        "args": {
+          "key": "а"
+        },
+        "timestamp": 111963.906
+      }
+    },
+    {
+      "before_frame_id": "48800416-ff55-4776-a27d-6ddf51aeb47b",
+      "after_frame_id": "3aba2bfc-0e8c-41cf-8cb2-5ecdfb2ed02f",
+      "input": {
+        "kind": "key_up",
+        "args": {
+          "key": "а"
+        },
+        "timestamp": 111963.906
+      }
+    },
+    {
+      "before_frame_id": "48800416-ff55-4776-a27d-6ddf51aeb47b",
+      "after_frame_id": "3aba2bfc-0e8c-41cf-8cb2-5ecdfb2ed02f",
+      "input": {
+        "kind": "key_down",
+        "args": {
+          "key": "з"
+        },
+        "timestamp": 111963.921
+      }
+    },
+    {
+      "before_frame_id": "48800416-ff55-4776-a27d-6ddf51aeb47b",
+      "after_frame_id": "3aba2bfc-0e8c-41cf-8cb2-5ecdfb2ed02f",
+      "input": {
+        "kind": "key_up",
+        "args": {
+          "key": "з"
+        },
+        "timestamp": 111963.921
+      }
+    }
+  ],
+  "gaps": [],
+  "omitted_inputs_no_frame": 0,
+  "truncated": false
+}
