@@ -52,8 +52,10 @@ def learning_evidence(trace: dict, selected_frames: list[dict]) -> dict:
         "gaps": trace.get("gaps", [])[:64], "truncated": trace.get("truncated", False),
         "interrupted": trace.get("interrupted", False),
         "recorded_step_count": len(trace.get("steps", [])), "compressed_step_count": len(compact),
+        "own_window_inputs": trace.get("own_window_inputs", 0),
         "frames": selected_frames,
         "evidence_limits": "Only attached images are visible evidence. Other frame IDs have no attached pixels. "
+            "Inputs on SOMA's own widget and dialogs (starting and stopping the recording) are left out. "
             "Input coordinates describe demonstrations only; re-ground each learned step on a fresh screenshot. "
             "Omitted input and private gaps are unknown; do not infer their content."}
     while True:
@@ -244,7 +246,7 @@ class DemonstrationRecorder:
                 self._trace = {"id": str(uuid.uuid4()), "started_at": utc_now(),
                                "ended_at": None, "clock": "monotonic", "frames": [],
                                "steps": [], "gaps": [], "omitted_inputs_no_frame": 0,
-                               "truncated": False, "accepted_inputs": 0}
+                               "own_window_inputs": 0, "truncated": False, "accepted_inputs": 0}
                 self.store.append_event("demonstration_started", {"id": self._trace["id"],
                     "started_at": self._trace["started_at"], "clock": "monotonic",
                     "limits": {"inputs": self._max_events, "frames": self._max_frames,
@@ -378,6 +380,19 @@ class DemonstrationRecorder:
             self._pending = remaining
             return frame.frame_id
 
+    def _on_own_window(self, args) -> bool:
+        """Input that went to SOMA's own widget or dialogs is recording control, not the
+        lesson (live, a short demonstration held only clicks on "Все, продовжуй"), and keys
+        typed into SOMA's own dialogs are never kept."""
+        own = getattr(self.port, "own_interface", None)
+        if own is None:
+            return False
+        rectangles, focused = own.snapshot()
+        if "x" in args:
+            return any(left <= args["x"] < right and top <= args["y"] < bottom
+                       for left, top, right, bottom in rectangles)
+        return focused
+
     def record_input(self, kind: str, args: dict, timestamp=None):
         """Native hook callback; public injection supports deterministic tests."""
         with self._lock:
@@ -401,6 +416,9 @@ class DemonstrationRecorder:
                     raise ValueError("Input coordinates must be finite numbers")
             if "button" in args and args["button"] not in {"left", "right", "middle", "x1", "x2"}:
                 raise ValueError("Invalid demonstration mouse button")
+            if self._on_own_window(args):
+                self._trace["own_window_inputs"] += 1
+                return False
             before = next((frame for frame in reversed(self._context_frames) if frame["available_at"] <= timestamp), None)
             if before is None:
                 self._trace["omitted_inputs_no_frame"] += 1

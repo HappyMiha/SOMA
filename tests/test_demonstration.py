@@ -127,6 +127,24 @@ class DemonstrationTests(unittest.TestCase):
         self.assertEqual(trace["gaps"][0]["reason"], "sensitive")
         self.assertIsNotNone(trace["gaps"][0]["ended_at"])
 
+    def test_inputs_on_somas_own_windows_are_recording_control_not_the_lesson(self):
+        # Live: a short demonstration held only clicks on the widget's "Все, продовжуй".
+        from soma.body import OwnInterface
+        from soma.demonstration import learning_evidence
+        self.port.own_interface = OwnInterface()
+        self.port.own_interface.publish([(-40, 0, -10, 30)], focused=False)
+        self.recorder.start()
+        self.recorder.capture(self.frame())
+        self.assertFalse(self.recorder.record_input("mouse_down", {"x": -30, "y": 10, "button": "left"}))
+        self.assertTrue(self.recorder.record_input("mouse_down", {"x": -80, "y": 10, "button": "left"}))
+        self.port.own_interface.publish([(-40, 0, -10, 30)], focused=True)      # typing into her own dialog
+        self.assertFalse(self.recorder.record_input("key_down", {"key": "own-dialog-secret"}))
+        trace = self.recorder.stop()
+        self.assertEqual([step["input"]["args"]["x"] for step in trace["steps"]], [-80])
+        self.assertEqual(trace["own_window_inputs"], 2)
+        self.assertNotIn("own-dialog-secret", json.dumps(self.store.memories) + json.dumps(self.store.events))
+        self.assertEqual(learning_evidence(trace, [])["own_window_inputs"], 2)
+
     def test_no_fabricated_after_frame_or_before_frame(self):
         self.recorder.start()
         self.assertFalse(self.recorder.record_input("key_down", {"key": "not-retained"}))

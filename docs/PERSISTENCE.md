@@ -2,7 +2,7 @@
 
 `MemoryStore(data_dir: Path)` reads and writes only SOMA's selected application data directory. It opens `memory.sqlite3` in SQLite WAL mode with FULL synchronization, verifies SQLite/foreign-key integrity, the event hash chain, checkpoint evidence, persisted identity and retained frame hashes before continuing. It refuses unknown schema versions or damaged history instead of creating a replacement personality. The current schema version is 1; no older deployed schema exists yet.
 
-One immutable identity record contains `persona_id`, the aliases `SOMA` and `SOMIK`, initial traits/motives and creation time. Model configuration is separate from identity. Evolving interests, lessons and current state belong in new memories/checkpoints, preserving the original autobiography.
+One immutable identity record per inhabitant contains `persona_id`, the name and aliases (SOMIK's, born before SOMA was a world, still reads `SOMA`/`SOMIK`; newer ones carry their own name and `world: SOMA`), initial traits/motives and creation time; name, birthday and world as known now are `identity.profile` events. Since 2026-11-01 each inhabitant's memory lives in `inhabitants/<persona_id>/` under the world's folder (ADR-004). Model configuration is separate from identity. Evolving interests, lessons and current state belong in new memories/checkpoints, preserving the original autobiography.
 
 The public API is:
 
@@ -17,6 +17,7 @@ The public API is:
 | `begin_action(action, before_frame_id)` | Commits an intent event and pending journal row in one transaction **before** external input |
 | `finish_action(id, outcome, after_frame_id)` | Stores visual outcome. `uncertain` remains unresolved; only success/failure closes the journal entry |
 | `pending_actions()` | Pending and uncertain entries, with decoded `action` and `outcome`; never emits/replays input |
+| `release_unresolved_action(id, evidence, frame_id)` | After three fresh-pixel inspections fail to establish an outcome, moves the entry to `unresolved` (journaled as `action.unresolved`). It is neither a claimed success nor a replay; `unresolved_actions()` keeps it in cognition context so the input is not repeated blindly |
 | `pending_demonstrations()` | Completed raw episodic traces plus journal-reconstructed interrupted traces, merged by ID; excludes acquired/unusable lessons and never restarts hooks or input |
 | `checkpoint(state)` / `latest_checkpoint()` | New checkpoint ID / the stored state dictionary directly (not an envelope), or `None` |
 | `save_frame(frame)` | Atomic app-owned PNG path; model-provided filenames are never used |

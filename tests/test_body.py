@@ -109,6 +109,9 @@ class BodyTests(unittest.TestCase):
         self.assertEqual(self.events, [])
         self.body.execute(Action("hotkey", {"keys": ["ctrl", "a"]}), self.frame)
         self.assertEqual(self.events, [("key_down", "CTRL"), ("key_down", "a"), ("key_up", "a"), ("key_up", "CTRL")])
+        self.events.clear()
+        self.body.execute(Action("hotkey", {"keys": ["Ctrl+A"]}), self.frame)   # live: "Alt+Tab" as one string
+        self.assertEqual(self.events, [("key_down", "CTRL"), ("key_down", "a"), ("key_up", "a"), ("key_up", "CTRL")])
 
     def test_native_validation_is_pure_and_available_while_observing(self):
         self.body.set_observing(True)
@@ -217,3 +220,206 @@ class BodyTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class OwnInterfaceTests(unittest.TestCase):
+    def setUp(self):
+        self.events = []
+        keys = SimpleNamespace(ctrl="CTRL", enter="ENTER", tab="TAB", shift="SHIFT", cmd="WIN")
+        buttons = SimpleNamespace(left="LEFT", right="RIGHT", middle="MIDDLE")
+        self.patches = [patch("soma.body._platform_backend", return_value="win32"), patch("soma.body._check_desktop"),
+                        patch("soma.body._input_devices", return_value=(FakeMouse(self.events), FakeKeyboard(self.events), buttons, keys))]
+        for item in self.patches:
+            item.start()
+        self.shell = SimpleNamespace(state=(((50, 20, 100, 60),), False))
+        self.shell.snapshot = lambda: self.shell.state
+        self.body = HumanInterfacePort(self.shell)
+        self.frame = ScreenFrame(b"png", 200, 100)
+
+    def tearDown(self):
+        self.body.close()
+        for item in reversed(self.patches):
+            item.stop()
+
+    def test_pointer_actions_on_own_widget_are_refused_before_any_event(self):
+        from soma.body import OwnInterfaceTarget
+        inside = Action("click", {"x": 75 / 199, "y": 40 / 99})
+        drag_through = Action("drag", {"x": 0, "y": .4, "x2": 1, "y2": .4})
+        for action in (inside, drag_through, Action("move", {"x": 75 / 199, "y": .4})):
+            with self.subTest(action=action.kind), self.assertRaises(OwnInterfaceTarget):
+                self.body.execute(action, self.frame)
+        self.assertEqual(self.events, [])
+        self.body.execute(Action("click", {"x": 0, "y": 0}), self.frame)
+        self.assertEqual(self.events[0], ("move", (0, 0)))
+
+    def test_keyboard_is_refused_while_own_widget_has_focus(self):
+        from soma.body import OwnInterfaceTarget
+        self.shell.state = ((), True)
+        for action in (Action("type_text", {"text": "x"}), Action("key", {"key": "enter"}), Action("hotkey", {"keys": ["ctrl", "v"]})):
+            with self.subTest(action=action.kind), self.assertRaises(OwnInterfaceTarget):
+                self.body.validate_action(action, self.frame)
+        self.body.validate_action(Action("click", {"x": 0, "y": 0}), self.frame)
+        self.body.validate_action(Action("wait", {"seconds": 1}), self.frame)
+
+    def test_scroll_where_own_pointer_rests_on_widget_is_refused(self):
+        from soma.body import OwnInterfaceTarget
+        self.shell.state = ((), False)
+        self.body.execute(Action("move", {"x": 75 / 199, "y": .4}), self.frame)
+        self.shell.state = (((50, 20, 100, 60),), False)
+        with self.assertRaises(OwnInterfaceTarget):
+            self.body.validate_action(Action("scroll", {"dx": 0, "dy": -3}), self.frame)
+
+    def test_the_hand_never_types_an_account_name_as_a_password(self):
+        self.shell.state = ((), False)
+        for action in (Action("type_secret", {"account": "a1"}), Action("type_new_secret", {"service": "X", "login": "y"})):
+            with self.subTest(action=action.kind), self.assertRaises(ValueError):
+                self.body.execute(action, self.frame)
+        self.assertEqual(self.events, [])
+
+    def test_scroll_at_a_point_first_brings_the_hand_there(self):
+        from soma.body import OwnInterfaceTarget
+        self.shell.state = (((50, 20, 100, 60),), False)
+        self.body.execute(Action("scroll", {"dx": 0, "dy": -3, "x": 0.1, "y": 0.9}), self.frame)
+        moves = [e for e in self.events if e[0] == "move"]
+        self.assertEqual(moves[-1], ("move", (round(0.1 * 199), round(0.9 * 99))))
+        self.assertEqual(self.events[-1], ("scroll", 0, -3))
+        self.assertEqual(self.body.pointer, moves[-1][1])
+        # Scrolling at the widget is refused like any pointer action, before any event.
+        count = len(self.events)
+        with self.assertRaises(OwnInterfaceTarget):
+            self.body.execute(Action("scroll", {"dx": 0, "dy": -3, "x": 75 / 199, "y": .4}), self.frame)
+        self.assertEqual(len(self.events), count)
+        with self.assertRaises(ValueError):
+            Action.parse({"kind": "scroll", "args": {"dx": 0, "dy": -3, "x": .5}, "expected": ""})
+
+
+@unittest.skipUnless(sys.platform == "win32", "compares against the native window rectangle")
+class OwnShellGeometryTests(unittest.TestCase):
+    """Test-only native cross-check of the Qt-published physical geometry."""
+
+    def native_rect(self, widget):
+        import ctypes
+        from ctypes import wintypes
+        rect = wintypes.RECT()
+        user32 = ctypes.WinDLL("user32")
+        user32.GetWindowRect.argtypes = [wintypes.HWND, ctypes.POINTER(wintypes.RECT)]
+        self.assertTrue(user32.GetWindowRect(int(widget.winId()), ctypes.byref(rect)))
+        return rect.left, rect.top, rect.right, rect.bottom
+
+    def test_published_frames_match_physical_pixels_and_cover_shell_dialogs(self):
+        from PySide6.QtWidgets import QApplication, QFileDialog, QWidget
+        from soma.app import SHELL_DIALOG, own_windows
+        app = QApplication.instance() or QApplication([])
+        widget = QWidget()
+        widget.setGeometry(120, 140, 300, 200)
+        widget.show()
+        dialog = QFileDialog(widget, "Резервна копія")
+        dialog.setOptions(SHELL_DIALOG)
+        dialog.show()
+        for _ in range(5):
+            app.processEvents()
+        try:
+            rectangles, _ = own_windows()
+            native = self.native_rect(widget)
+            # DWM adds invisible resize borders to the native rectangle.
+            self.assertTrue(any(all(abs(a - b) <= 12 for a, b in zip(r, native)) for r in rectangles),
+                            (rectangles, native))
+            self.assertTrue(any(all(abs(a - b) <= 12 for a, b in zip(r, self.native_rect(dialog)))
+                                for r in rectangles))
+        finally:
+            dialog.close()
+            widget.close()
+            app.processEvents()
+
+
+def test_status_widget_never_holds_the_keyboard_but_a_modal_dialog_does():
+    from PySide6.QtCore import Qt
+    from PySide6.QtWidgets import QApplication, QDialog, QWidget
+    from soma.app import own_windows
+    app = QApplication.instance() or QApplication([])
+    widget = QWidget()
+    widget.setWindowFlag(Qt.WindowType.WindowDoesNotAcceptFocus)
+    widget.show()
+    widget.activateWindow()
+    app.processEvents()
+    try:
+        rectangles, keyboard = own_windows()
+        assert rectangles and not keyboard
+        dialog = QDialog(widget)
+        dialog.setModal(True)
+        dialog.show()
+        app.processEvents()
+        assert own_windows()[1]
+        dialog.close()
+    finally:
+        widget.close()
+        app.processEvents()
+
+
+def test_common_key_spellings_resolve_to_one_native_key():
+    from soma.body import canonical_key
+    for spelling, expected in [("PgDn", "page_down"), ("Page Down", "page_down"), ("page-up", "page_up"),
+                               ("PAGEDOWN", "page_down"), ("ArrowLeft", "left"), ("Del", "delete"),
+                               ("Escape", "esc"), ("Windows", "cmd")]:
+        assert canonical_key(spelling) == expected, spelling
+    assert canonical_key("A") == "A"
+
+
+def test_a_notification_lying_over_her_widget_can_be_clicked_but_her_widget_cannot():
+    from io import BytesIO
+    from PIL import Image, ImageDraw
+    from soma.body import OwnInterface
+    widget = Image.new("RGB", (300, 200), (248, 246, 255))
+    draw = ImageDraw.Draw(widget)
+    draw.rectangle((10, 10, 290, 120), fill=(40, 30, 90))          # her painting
+    draw.rectangle((10, 140, 120, 160), fill=(20, 20, 30))         # her name
+    shell = OwnInterface()
+    shell.publish(((100, 100, 400, 300),), False)
+    shell.publish_looks([((100, 100, 400, 300), 300, 200, widget.convert("RGBX").tobytes())])
+    def screen(paint):
+        image = Image.new("RGB", (800, 500), (255, 255, 255))
+        image.paste(widget, (100, 100))
+        paint(ImageDraw.Draw(image))
+        buffer = BytesIO()
+        image.save(buffer, "PNG")
+        return ScreenFrame(buffer.getvalue(), 800, 500)
+    as_it_is = screen(lambda draw: None)
+    assert not shell.covered([(350, 280)], as_it_is)                           # her own widget: hers alone
+    toast = screen(lambda draw: draw.rectangle((180, 170, 420, 320), fill=(230, 120, 160)))   # "pin to taskbar?"
+    assert shell.covered([(350, 280)], toast)                                  # its "No, thanks" is clickable
+    assert not shell.covered([(120, 115)], toast)                              # the uncovered corner is not
+    new_status = screen(lambda draw: draw.rectangle((110, 265, 390, 283), fill=(250, 60, 60)))   # a line changed
+    assert not shell.covered([(250, 274)], new_status)
+    assert not OwnInterface().covered([(250, 274)], toast)                     # no picture of it: stays hers
+
+
+def test_key_names_typed_as_text_are_refused_as_a_mix_up():
+    from soma.body import key_names_only
+    for mistaken in ("delete delete", "Backspace", "ctrl+a backspace", "Enter", "del, del, del"):
+        assert key_names_only(mistaken), mistaken
+    for words in ("Тепер я знаю, що ти син Міхи", "delete this later", "Enter the room", "a", "230"):
+        assert not key_names_only(words), words
+
+
+def test_drag_hovers_and_pauses_like_a_hand():
+    import time
+    from types import SimpleNamespace
+    from unittest.mock import patch
+    events = []
+    class Mouse:
+        position = property(lambda self: None, lambda self, p: events.append(("move", time.monotonic())))
+        def press(self, b): events.append(("down", time.monotonic()))
+        def release(self, b): events.append(("up", time.monotonic()))
+    keys = SimpleNamespace(ctrl="CTRL", enter="ENTER", tab="TAB", shift="SHIFT", cmd="WIN")
+    buttons = SimpleNamespace(left="LEFT", right="RIGHT", middle="MIDDLE")
+    with patch("soma.body._platform_backend", return_value="win32"), patch("soma.body._check_desktop"), \
+            patch("soma.body._input_devices", return_value=(Mouse(), None, buttons, keys)):
+        body = HumanInterfacePort()
+        body.execute(Action("drag", {"x": .1, "y": .1, "x2": .9, "y2": .9}), ScreenFrame(b"png", 200, 100))
+    kinds = [k for k, _ in events]
+    assert kinds[0] == "move" and kinds[1] == "down" and kinds[-1] == "up" and kinds.count("move") == 21
+    times = dict((k, t) for k, t in events if k in ("down", "up"))
+    first_move = events[0][1]
+    second_move = next(t for k, t in events[2:] if k == "move")
+    assert times["down"] - first_move >= 0.14      # hovered before grabbing
+    assert second_move - times["down"] >= 0.07     # paused after pressing

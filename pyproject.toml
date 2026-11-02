@@ -4,10 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "soma-desktop"
-version = "0.1.0"
+version = "0.2.0"
 description = "SOMA / SOMIK: a persistent, pixels-only desktop personality"
 requires-python = ">=3.11"
-dependencies = ["PySide6-Essentials>=6.8,<7", "mss>=10,<11", "pynput>=1.8,<2", "Pillow>=11,<13", "httpx>=0.28,<1", "keyring>=25,<26"]
+dependencies = ["PySide6-Essentials>=6.8,<7", "mss>=10,<11", "pynput>=1.8,<2", "Pillow>=11,<13", "httpx>=0.28,<1", "keyring>=25,<26",
+                "rapidocr>=3.10,<4", "onnxruntime>=1.20,<2"]
 
 [project.optional-dependencies]
 dev = ["pytest>=8,<10", "pyinstaller>=6,<7", "pip-licenses>=5,<6"]

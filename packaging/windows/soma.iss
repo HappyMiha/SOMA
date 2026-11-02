@@ -1,7 +1,7 @@
 [Setup]
 AppId={{6E776649-ECA7-47A7-9A36-7775AD4F13A8}
 AppName=SOMA / SOMIK
-AppVersion=0.1.0
+AppVersion=0.2.0
 DefaultDirName={localappdata}\Programs\SOMA
 DefaultGroupName=SOMA
 PrivilegesRequired=lowest
@@ -9,7 +9,7 @@ ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 MinVersion=10.0.19041
 OutputDir=..\..\artifacts\win32
-OutputBaseFilename=SOMA-0.1.0-windows-x64-setup
+OutputBaseFilename=SOMA-0.2.0-windows-x64-setup
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
@@ -36,6 +36,21 @@ Name: "{userstartup}\SOMA"; Filename: "{app}\SOMA.exe"; Tasks: autostart
 
 [Run]
 Filename: "{app}\SOMA.exe"; Description: "Open SOMA"; Flags: nowait postinstall skipifsilent
+
+[UninstallRun]
+Filename: "{app}\SOMA.exe"; Parameters: "--quit"; RunOnceId: "SaveSomaState"; Flags: runhidden waituntilterminated
+
+[Code]
+{ Let a running SOMA checkpoint and exit before files are replaced,
+  instead of relying on Restart Manager to close it. }
+function PrepareToInstall(var NeedsRestart: Boolean): String;
+var
+  ResultCode: Integer;
+begin
+  if FileExists(ExpandConstant('{app}\SOMA.exe')) then
+    Exec(ExpandConstant('{app}\SOMA.exe'), '--quit', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+  Result := '';
+end;
 
 ; Own personality data under LOCALAPPDATA\SOMA is intentionally preserved on
 ; upgrade/uninstall. No application files are touched by the runtime.

@@ -38,7 +38,7 @@ def notices():
     if required.exists():
         shutil.copytree(required, licenses / 'required-license-texts', dirs_exist_ok=True)
     sbom = {'bomFormat': 'CycloneDX', 'specVersion': '1.5', 'version': 1,
-            'metadata': {'component': {'type': 'application', 'name': 'SOMA', 'version': '0.1.0'}},
+            'metadata': {'component': {'type': 'application', 'name': 'SOMA', 'version': '0.2.0'}},
             'components': components}
     (ARTIFACTS / 'sbom.cdx.json').write_text(json.dumps(sbom, indent=2), 'utf-8')
     subprocess.run([sys.executable, '-m', 'pip', 'freeze', '--all'], check=True,
@@ -61,7 +61,7 @@ def linux_deb():
         shutil.copyfile(ROOT / 'packaging/linux/soma.desktop', autostart / 'soma.desktop')
         control = package / 'DEBIAN'
         control.mkdir()
-        (control / 'control').write_text('Package: soma-desktop\nVersion: 0.1.0\nSection: utils\nPriority: optional\n'
+        (control / 'control').write_text('Package: soma-desktop\nVersion: 0.2.0\nSection: utils\nPriority: optional\n'
             'Architecture: amd64\nMaintainer: SOMA Project\n'
             'Depends: libc6 (>= 2.38), libxcb-cursor0, libxcb-icccm4, libxcb-image0, libxcb-keysyms1, libxcb-randr0, '
             'libxcb-render-util0, libxcb-shape0, libxcb-sync1, libxcb-xfixes0, libxcb-xkb1, '
@@ -72,7 +72,7 @@ def linux_deb():
             if not path.is_symlink():
                 path.chmod(0o755 if path.is_dir() or path == package / 'opt/soma/SOMA' else 0o644)
         subprocess.run(['dpkg-deb', '--root-owner-group', '--build', str(package),
-                        str(ARTIFACTS / 'SOMA-0.1.0-linux-amd64.deb')], check=True)
+                        str(ARTIFACTS / 'SOMA-0.2.0-linux-amd64.deb')], check=True)
 
 
 def checksums():

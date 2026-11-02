@@ -33,7 +33,8 @@ class MemoryTests(unittest.TestCase):
     def test_identity_and_checkpoint_survive_provider_change_and_restart(self):
         identity = self.store.identity()
         identity["aliases"].append("unrelated")
-        self.assertEqual(self.store.identity()["aliases"], ["SOMA", "SOMIK"])
+        self.assertEqual(self.store.identity()["aliases"], ["SOMIK"])   # an inhabitant of SOMA, named SOMIK
+        self.assertEqual(self.store.identity()["world"], "SOMA")
         persona_id = identity["persona_id"]
         self.store.checkpoint({"state": "ASLEEP", "provider": "old", "unfinished": ["learn"]})
         self.reopen()
@@ -337,3 +338,27 @@ class MemoryTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def test_vector_recall_tolerates_inflection_and_skips_field_names(tmp_path):
+    from soma.memory import MemoryStore
+    store = MemoryStore(tmp_path)
+    store.add_memory("semantic", {"summary": "Незавершена дія надсилання листа"}, {"frame_id": "f"}, .9)
+    store.add_memory("semantic", {"summary": "Calculator window shows a result"}, {"frame_id": "f"}, .9)
+    found = store.recall("Перевіряю незавершені дії", limit=5)
+    assert [m["content"]["summary"] for m in found] == ["Незавершена дія надсилання листа"]
+    # Vectors index values only: a fragment of the shared JSON key "summary"
+    # (no exact term) must not make every memory similar.
+    assert store.recall("summ") == []
+    store.close()
+
+
+def test_vector_index_is_rebuilt_for_older_memories(tmp_path):
+    from soma.memory import MemoryStore
+    store = MemoryStore(tmp_path)
+    store.add_memory("procedural", {"name": "Відкривати браузер"}, {"demonstration": "d"}, .8)
+    store._db.execute("DELETE FROM memory_vectors")
+    store.close()
+    store = MemoryStore(tmp_path)
+    assert store.recall("браузері")[0]["kind"] == "procedural"
+    store.close()

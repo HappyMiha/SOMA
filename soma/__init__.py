@@ -1,3 +1,5 @@
-"""SOMA and SOMIK are two names for one persistent identity."""
+"""SOMA is the world on this PC; SOMIK is its first inhabitant, one persistent personality.
 
-__version__ = "0.1.0"
+More inhabitants may live in SOMA, each with a home and identity of their own (soma.world)."""
+
+__version__ = "0.2.0"

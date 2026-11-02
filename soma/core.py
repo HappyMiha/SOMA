@@ -60,12 +60,19 @@ ACTION_FIELDS = {
     "double_click": {"x", "y", "button"},
     "move": {"x", "y"},
     "drag": {"x", "y", "x2", "y2", "button"},
-    "scroll": {"dx", "dy"},
+    "scroll": {"dx", "dy", "x", "y"},
     "key": {"key"},
     "hotkey": {"keys"},
     "type_text": {"text"},
+    # Keyboard events whose text is a password from her vault: the brain names
+    # the account, never the password, and the journal records only that name.
+    "type_secret": {"account"},
+    "type_new_secret": {"service", "login"},
     "wait": {"seconds"},
 }
+# Arguments an action may leave out. A wheel turns whatever is under the
+# pointer, so a scroll may first bring the pointer to x,y, as a hand does.
+OPTIONAL_FIELDS = {"click": {"button"}, "double_click": {"button"}, "drag": {"button"}, "scroll": {"x", "y"}}
 
 
 @dataclass(frozen=True)
@@ -83,8 +90,8 @@ class Action:
             raise ValueError("Unknown input action")
         if set(args) - ACTION_FIELDS[kind]:
             raise ValueError("Unexpected action arguments")
-        required = ACTION_FIELDS[kind] - {"button"}
-        if not required <= set(args):
+        required = ACTION_FIELDS[kind] - OPTIONAL_FIELDS.get(kind, set())
+        if not required <= set(args) or ("x" in args) != ("y" in args):
             raise ValueError("Missing action arguments")
         for name in ("x", "y", "x2", "y2"):
             if name in args and (type(args[name]) not in (float, int) or
@@ -107,6 +114,9 @@ class Action:
                                not 1 <= len(args["keys"]) <= 5 or
                                any(not isinstance(k, str) or not 1 <= len(k) <= 24 for k in args["keys"])):
             raise ValueError("Hotkey must have 1..5 keys")
+        for name in ("account", "service", "login"):
+            if name in args and (not isinstance(args[name], str) or not 1 <= len(args[name].strip()) <= 200):
+                raise ValueError("An account is named by a short non-empty text")
         expected = value.get("expected", "")
         if not isinstance(expected, str) or len(expected) > 2000:
             raise ValueError("Invalid expected visual result")

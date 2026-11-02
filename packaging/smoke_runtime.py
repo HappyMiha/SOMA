@@ -69,7 +69,13 @@ class CognitionStub(BaseHTTPRequestHandler):
 
 
 def inspect_memory(directory):
-    database = directory / "memory.sqlite3"
+    # SOMA is the world; the memory lives in its active inhabitant's home (soma.world).
+    registry = directory / "world.json"
+    if not registry.is_file():
+        raise RuntimeError("The target settled no world; check startup logs or an existing singleton instance")
+    world = json.loads(registry.read_text(encoding="utf-8"))
+    home = next(i["home"] for i in world["inhabitants"] if i["id"] == world["active"])
+    database = directory / home / "memory.sqlite3"
     if not database.is_file():
         raise RuntimeError("The target created no runtime database; check startup logs or an existing singleton instance")
     with closing(sqlite3.connect(database)) as connection:
@@ -84,7 +90,10 @@ def inspect_memory(directory):
 
 
 def run_target(command, data_dir, output, run_number):
-    arguments = [*command, "--smoke-seconds", "5", "--smoke-life", "--data-dir", str(data_dir)]
+    # Long enough for the first decision: on a CPU the machine-vision model
+    # loads and reads a full screen before cognition is asked, and a freshly
+    # installed copy's first launch loads its model files cold (observed >30 s).
+    arguments = [*command, "--smoke-seconds", "60", "--smoke-life", "--data-dir", str(data_dir)]
     started = time.monotonic()
     evidence = {"run": run_number, "started_at": utc_now(), "command": arguments,
                 "stdout_log": f"run-{run_number}.stdout.log", "stderr_log": f"run-{run_number}.stderr.log"}
@@ -93,7 +102,7 @@ def run_target(command, data_dir, output, run_number):
         process = subprocess.Popen(arguments, cwd=ROOT, env=environment, stdout=stdout, stderr=stderr,
             creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0)
         try:
-            evidence["exit_code"] = process.wait(timeout=30)
+            evidence["exit_code"] = process.wait(timeout=110)
         except subprocess.TimeoutExpired:
             evidence["timed_out"] = True
             process.terminate()

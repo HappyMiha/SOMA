@@ -1,6 +1,10 @@
 # SOMA repository instructions
 
-SOMA and SOMIK are one persistent identity. Follow docs/SOMA_IMPLEMENTATION_SPEC.md.
+SOMA is the world (the system on this PC); SOMIK is its first inhabitant, one
+persistent identity (owner's decision 2026-11-01, ADR-004). Each inhabitant has
+its own home, identity and memory under inhabitants/<persona id>/; the world
+keeps the body, brains, painter, widget and world.json. Follow
+docs/SOMA_IMPLEMENTATION_SPEC.md.
 All production interaction with applications MUST pass through HumanInterfacePort:
 monitor pixels, native mouse events, native keyboard events. No DOM/CDP, app APIs,
 accessibility/UIA, clipboard, hidden shell or user-file/process/window inspection.
