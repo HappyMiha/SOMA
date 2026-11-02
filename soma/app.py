@@ -28,7 +28,7 @@ class SetupDialog(QDialog):
         self.setMinimumWidth(510)
         form = QFormLayout(self)
         description = QLabel("Модель отримує знімки екрана для мислення.\n"
-            "Особистість і пам’ять залишаються на цьому ПК.\n"
+            "Мешканці SOMA, їхні особистість і пам’ять залишаються на цьому ПК.\n"
             "Налаштуйте multimodal OpenAI-compatible endpoint із JSON-відповідями.")
         description.setWordWrap(True)
         form.addRow(description)
@@ -63,7 +63,7 @@ class SetupDialog(QDialog):
         self.budget = QSpinBox()
         self.budget.setRange(0, 1_000_000)
         self.budget.setSpecialValueText("без ліміту")
-        self.budget.setToolTip("Скільки платних запитів до віддаленої моделі SOMA може зробити за добу")
+        self.budget.setToolTip("Скільки платних запитів до віддаленої моделі мешканці SOMA можуть зробити за добу")
         self.budget.setValue(config.daily_request_budget)
         self.consent = QCheckBox("Дозволяю надсилати пікселі екрана налаштованій моделі")
         self.consent.setChecked(bool(config.endpoint or config.local_model))
@@ -120,18 +120,18 @@ class SetupDialog(QDialog):
                                "Не вдалося зберегти налаштування або ключ у сховищі ОС")
 
 
-PASSWORD_PLACE_TITLES = [("У сховищі SOMA (вводить її рука)", "vault"),
+PASSWORD_PLACE_TITLES = [("У сховищі SOMA (набирається клавіатурою)", "vault"),
                          ("Збережено в браузері (автозаповнення)", "browser"), ("Невідомо", "unknown")]
 
 
 class AccountEditDialog(QDialog):
-    """One of her accounts, as her owner sets it right."""
+    """One of an inhabitant's accounts, as the owner sets it right."""
 
-    def __init__(self, accounts, account=None, parent=None):
+    def __init__(self, accounts, account=None, parent=None, name="SOMIK"):
         from soma.accounts import STATUSES
         super().__init__(parent)
         self.accounts, self.account = accounts, account or {}
-        self.setWindowTitle("Акаунт SOMA")
+        self.setWindowTitle(f"Акаунт {name}")
         self.setMinimumWidth(460)
         form = QFormLayout(self)
         self.service = QLineEdit(self.account.get("service", ""))
@@ -179,17 +179,17 @@ class AccountEditDialog(QDialog):
 
 
 class AccountsDialog(QDialog):
-    """Her accounts for her owner: logins, status and passwords, to set right
-    what she cannot. While it is open SOMA neither looks nor acts."""
+    """An inhabitant's accounts for the owner: logins, status and passwords, to set
+    right what the inhabitant cannot. While it is open the inhabitant neither looks nor acts."""
 
-    def __init__(self, accounts, parent=None):
+    def __init__(self, accounts, parent=None, name="SOMIK"):
         from PySide6.QtWidgets import QAbstractItemView, QHeaderView, QTableWidget
         super().__init__(parent)
-        self.accounts = accounts
-        self.setWindowTitle("SOMA — мої акаунти")
+        self.accounts, self.name = accounts, name
+        self.setWindowTitle(f"{name} — мої акаунти")
         self.setMinimumSize(760, 320)
         layout = QVBoxLayout(self)
-        note = QLabel("Поки це вікно відкрите, SOMA не дивиться на екран і нічого не робить. "
+        note = QLabel(f"Поки це вікно відкрите, {name} не дивиться на екран і нічого не робить. "
                       "Паролі — у сховищі облікових даних Windows; жоден мозок їх не бачить.")
         note.setWordWrap(True)
         layout.addWidget(note)
@@ -246,11 +246,11 @@ class AccountsDialog(QDialog):
 
     def edit(self):
         account = self.selected()
-        if account is not None and AccountEditDialog(self.accounts, account, self).exec():
+        if account is not None and AccountEditDialog(self.accounts, account, self, self.name).exec():
             self.refresh()
 
     def add(self):
-        if AccountEditDialog(self.accounts, None, self).exec():
+        if AccountEditDialog(self.accounts, None, self, self.name).exec():
             self.refresh()
 
 
@@ -259,13 +259,13 @@ OWNER_SAYS = "my owner said so"
 
 
 class PersonEditDialog(QDialog):
-    """Someone SOMA knows, as her owner sets it right; what the owner says here counts as confirmed."""
+    """Someone an inhabitant knows, as the owner sets it right; what the owner says here counts as confirmed."""
 
-    def __init__(self, people, person=None, parent=None):
+    def __init__(self, people, person=None, parent=None, name="SOMIK"):
         from PySide6.QtWidgets import QPlainTextEdit
         super().__init__(parent)
         self.people, self.person = people, person or {}
-        self.setWindowTitle("Людина, яку знає SOMA")
+        self.setWindowTitle(f"Людина, яку знає {name}")
         self.setMinimumWidth(480)
         form = QFormLayout(self)
         self.name = QLineEdit(self.person.get("name", ""))
@@ -281,7 +281,7 @@ class PersonEditDialog(QDialog):
         self.accounts.setFixedHeight(72)
         self.note = QLineEdit()
         self.note.setPlaceholderText("Нова нотатка від вас (необов'язково)")
-        for title, widget in [("Ім'я", self.name), ("Хто це для SOMA", self.relation), ("Довіра", self.trust),
+        for title, widget in [("Ім'я", self.name), (f"Хто це для {name}", self.relation), ("Довіра", self.trust),
                               ("Акаунти (по рядку: сервіс: нік)", self.accounts), ("Нотатка", self.note)]:
             form.addRow(title, widget)
         self.error = QLabel()
@@ -317,17 +317,17 @@ class PersonEditDialog(QDialog):
 
 
 class PeopleDialog(QDialog):
-    """The people SOMA knows and her notes about them, for her owner to read and set right."""
+    """The people an inhabitant knows and the inhabitant's notes about them, for the owner to read and set right."""
 
-    def __init__(self, people, parent=None):
+    def __init__(self, people, parent=None, name="SOMIK"):
         from PySide6.QtWidgets import QAbstractItemView, QHeaderView, QListWidget, QTableWidget
         super().__init__(parent)
-        self.people = people
-        self.setWindowTitle("SOMA — люди, яких я знаю")
+        self.people, self.name = people, name
+        self.setWindowTitle(f"{name} — люди, яких я знаю")
         self.setMinimumSize(780, 460)
         layout = QVBoxLayout(self)
-        note = QLabel("Кого знає SOMA, хто це для неї, їхні акаунти і що вона про них занотувала. "
-                      "Ваші зміни тут вона вважає підтвердженими. Поки вікно відкрите, SOMA не дивиться на екран.")
+        note = QLabel(f"Кого знає {name}, хто вони одне одному, їхні акаунти й нотатки {name} про них. "
+                      f"Ваші зміни тут вважаються підтвердженими. Поки вікно відкрите, {name} не дивиться на екран.")
         note.setWordWrap(True)
         layout.addWidget(note)
         self.table = QTableWidget(0, 4)
@@ -382,11 +382,11 @@ class PeopleDialog(QDialog):
 
     def edit(self):
         person = self.selected()
-        if person is not None and PersonEditDialog(self.people, person, self).exec():
+        if person is not None and PersonEditDialog(self.people, person, self, self.name).exec():
             self.refresh()
 
     def add(self):
-        if PersonEditDialog(self.people, None, self).exec():
+        if PersonEditDialog(self.people, None, self, self.name).exec():
             self.refresh()
 
     def forget(self):
@@ -872,7 +872,7 @@ class LifeWidget(QWidget):
             self.settle_world()
         except Exception as exc:
             # Nothing was changed that is not finished on the next start; the folder is kept as it is.
-            self.show_failure("SOMA не змогла влаштувати мешканця: " + str(exc)[:200])
+            self.show_failure("Не вдалося влаштувати мешканця у світі SOMA: " + str(exc)[:200])
             return
         try:
             if not (self.data_dir / "model.json").exists():
@@ -1034,7 +1034,7 @@ class LifeWidget(QWidget):
             self.detail.setText("Власне введення вже вимкнено; готую видимий запис…")
 
     def show_accounts(self):
-        """Her accounts for her owner; her eyes stay closed while they are shown."""
+        """The inhabitant's accounts for the owner; the inhabitant's eyes stay closed while they are shown."""
         from soma.accounts import Accounts
         from soma.memory import MemoryStore
         store, own = self.store, False
@@ -1046,7 +1046,8 @@ class LifeWidget(QWidget):
         if kernel:
             kernel.close_eyes()
         try:
-            AccountsDialog(self.accounts if not own else Accounts(store, self._vault()), self).exec()
+            AccountsDialog(self.accounts if not own else Accounts(store, self._vault()), self,
+                           (self.inhabitant or {}).get("name", "SOMIK")).exec()
         except Exception as exc:
             self.show_failure("Акаунти не відкрито: " + type(exc).__name__)
         finally:
@@ -1056,7 +1057,7 @@ class LifeWidget(QWidget):
                 store.close()
 
     def show_people(self):
-        """The people she knows, for her owner to read and set right; her eyes rest meanwhile."""
+        """The people the inhabitant knows, for the owner to read and set right; the inhabitant's eyes rest meanwhile."""
         from soma.memory import MemoryStore
         from soma.people import People
         store, own = self.store, False
@@ -1068,7 +1069,8 @@ class LifeWidget(QWidget):
         if kernel:
             kernel.close_eyes()
         try:
-            PeopleDialog(self.people if not own else People(store), self).exec()
+            PeopleDialog(self.people if not own else People(store), self,
+                         (self.inhabitant or {}).get("name", "SOMIK")).exec()
         except Exception as exc:
             self.show_failure("Людей не відкрито: " + type(exc).__name__)
         finally:
@@ -1136,7 +1138,7 @@ class LifeWidget(QWidget):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="SOMA / SOMIK native desktop")
+    parser = argparse.ArgumentParser(description="SOMA, a world on this PC, and its inhabitants (SOMIK first)")
     parser.add_argument("--data-dir", type=Path, default=None, help="Own-product data directory")
     parser.add_argument("--smoke-seconds", type=int, default=0, help="UI-only packaged smoke test")
     parser.add_argument("--smoke-life", action="store_true", help=argparse.SUPPRESS)

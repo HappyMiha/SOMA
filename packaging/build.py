@@ -66,7 +66,7 @@ def linux_deb():
             'Depends: libc6 (>= 2.38), libxcb-cursor0, libxcb-icccm4, libxcb-image0, libxcb-keysyms1, libxcb-randr0, '
             'libxcb-render-util0, libxcb-shape0, libxcb-sync1, libxcb-xfixes0, libxcb-xkb1, '
             'libxkbcommon-x11-0, libegl1, libopengl0, libgl1, libdbus-1-3, libx11-6, libx11-xcb1, libxtst6\n'
-            'Recommends: gnome-keyring\nDescription: SOMA / SOMIK native pixels-only desktop personality\n', 'utf-8')
+            'Recommends: gnome-keyring\nDescription: SOMA, a pixels-only desktop world whose inhabitants (SOMIK first) are persistent personalities\n', 'utf-8')
         package.chmod(0o755)
         for path in package.rglob('*'):
             if not path.is_symlink():

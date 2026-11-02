@@ -1,4 +1,6 @@
-"""The people she knows: who they are to her, their accounts, and what she notes about them.
+"""The people an inhabitant knows: who they are to the inhabitant, their accounts, and the
+inhabitant's own notes about them (kept in the inhabitant's memory).
+
 
 A registry she always thinks with, like her own accounts. Everyone she has met
 (p1, p2 …): who they are to her ("my owner, Miha", "Miha's son"), their

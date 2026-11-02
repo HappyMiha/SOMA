@@ -1,6 +1,6 @@
 [Setup]
 AppId={{6E776649-ECA7-47A7-9A36-7775AD4F13A8}
-AppName=SOMA / SOMIK
+AppName=SOMA
 AppVersion=0.2.0
 DefaultDirName={localappdata}\Programs\SOMA
 DefaultGroupName=SOMA
@@ -52,5 +52,5 @@ begin
   Result := '';
 end;
 
-; Own personality data under LOCALAPPDATA\SOMA is intentionally preserved on
+; The world and its inhabitants' homes under LOCALAPPDATA\SOMA are intentionally preserved on
 ; upgrade/uninstall. No application files are touched by the runtime.

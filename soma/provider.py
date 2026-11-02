@@ -742,7 +742,7 @@ class ModelProvider:
         system = self._system() + "\n" + instructions
         error = None
         # A brain that is resting (usage limit) or out of today's budget is
-        # skipped while another can think; if none can, SOMA rests too.
+        # skipped while another can think; if none can, the inhabitant rests too.
         def unavailable(route):
             if route == "local":
                 return 0.0

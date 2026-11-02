@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "soma-desktop"
 version = "0.2.0"
-description = "SOMA / SOMIK: a persistent, pixels-only desktop personality"
+description = "SOMA: a pixels-only desktop world whose inhabitants (SOMIK first) are persistent personalities"
 requires-python = ">=3.11"
 dependencies = ["PySide6-Essentials>=6.8,<7", "mss>=10,<11", "pynput>=1.8,<2", "Pillow>=11,<13", "httpx>=0.28,<1", "keyring>=25,<26",
                 "rapidocr>=3.10,<4", "onnxruntime>=1.20,<2"]

@@ -15,7 +15,7 @@ uses `/api/chat` with an explicit context size and JSON-schema decoding; request
 that would not fit are refused, never silently truncated. The OpenAI-compatible
 HTTP route remains for keyed providers. The owner removed the daily request cap.
 
-**Perception and pacing.** SOMA perceives a first-person diary, not telemetry.
+**Perception and pacing.** The inhabitant (SOMIK; see ADR-004) perceives a first-person diary, not telemetry.
 Pointer plans are invalidated only by change near their target, keyboard plans by
 any change, and looking around (move, scroll, page/arrow keys) is never discarded
 and is verified from pixels instead of a second inference. An input that changes

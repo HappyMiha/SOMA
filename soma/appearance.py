@@ -1,4 +1,8 @@
-"""Her own look: a living avatar that shows her inner life, made and changed by her.
+"""An inhabitant's own look: a living avatar that shows their inner life, made and changed by them.
+
+Belongs to the inhabitant (SOMIK first) and is kept in the inhabitant's memory;
+the world only draws it (soma.avatar) and paints it (soma.imaging).
+
 
 Three layers, each hers to set:
 

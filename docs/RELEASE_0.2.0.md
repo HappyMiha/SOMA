@@ -1,8 +1,7 @@
 # SOMA 0.2.0 — development build, first real life on SOMIK
 
 Built and installed 2026-10-31 on the owner's Windows 11 laptop from the source in
-`C:\SOMA` (no git on this PC; the GitHub repository HappyMiha/SOMA does not contain
-these changes yet).
+`C:\SOMA`; pushed to GitHub HappyMiha/SOMA on 2026-11-02 (commit da777f7).
 
 | Artifact | Size | SHA256 |
 |---|---:|---|
@@ -20,10 +19,16 @@ passed the static ICU guard and the packaged two-launch runtime smoke.
 What changed since 0.1.0: native Ollama with schema decoding and context checks;
 Codex/Claude Code subscription CLIs as tool-less brains (hybrid with local
 fallback); first-person diary context and life-oriented prompt; owner decisions on
-her self-image (PERSONALITY_AND_LIFE.md); own-shell exclusion; minimal widget with
+the inhabitant's self-image (PERSONALITY_AND_LIFE.md); own-shell exclusion; minimal widget with
 housekeeping in the tray; first-run local brain detection; trigram vector recall;
 `--quit`; adaptive settle; pixel-paced rest and verification; key-name
 normalization; `recently_done`. See ADR-003 and WORK_LOG.md.
+
+Later 0.2.0 builds (2026-10-31 → 2026-11-02, 256 tests): SOMA became the world and
+SOMIK its first inhabitant with his own home (ADR-004); the people he knows with
+trust and his notes; accounts vault per inhabitant; a pixel-art avatar and GPU
+self-portraits; demonstrations without SOMA's own windows; stuck-window and
+unsure-look handling.
 
 Live results are in TEST_RESULTS.md and IMPLEMENTATION_STATUS.md: autonomous start,
 browser exploration, Telegram correspondence, an own Proton mailbox (CAPTCHA by a

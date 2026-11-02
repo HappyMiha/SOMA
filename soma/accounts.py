@@ -1,4 +1,8 @@
-"""Her own accounts: a registry she always knows, passwords only her hand and her owner see.
+"""An inhabitant's own accounts: a registry they always know, passwords only their hand and the owner see.
+
+Belongs to the inhabitant (SOMIK first): the registry lives in the inhabitant's
+memory, passwords in the OS vault under "<persona id>/<account id>".
+
 
 The registry (service, login, status, where the password is) is part of her
 memory and of every context she thinks with. Passwords are kept in the OS

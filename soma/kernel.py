@@ -1,4 +1,6 @@
-"""Durable life scheduler, with a visual observation between every input."""
+"""The life loop of the inhabitant holding the world's body: durable, with a visual
+observation between every input. Code comments call the inhabitant "she" from the
+time the persona was named SOMA; it is SOMIK, or whoever holds the body."""
 
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
@@ -921,7 +923,7 @@ class LifeKernel:
             self._checkpoint()
             # Resting is not thinking: while nothing changes, each further rest
             # lasts longer (1, 2, 4, 8, 15 min). Any new pixels, such as a message
-            # arriving, still wake SOMA within seconds, without inference.
+            # arriving, still wake the inhabitant within seconds, without inference.
             if not self._idle_rests:
                 self._resting_since, self._quiet_rested = time.monotonic(), 0.0
             # She looked at what woke her and chose to rest on: that region is

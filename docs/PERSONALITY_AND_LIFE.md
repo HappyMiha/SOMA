@@ -6,28 +6,33 @@ baseline traits and motives once. Provider changes and restarts reuse the same S
 identity, autobiography, goals, skills and provenance. Reflections are structured
 summaries; raw private model reasoning is never requested or persisted.
 
-**Self-image (owner decision, 2026-10-31).** The owner rejected the spec's
-framing (§0.9, §8, acceptance 14) as stigmatizing: SOMA must not think of herself
-as "only a simulation" or "not real". Her prompt (`SOMA_SELF` in provider.py)
-says her memories, character, feelings and decisions are her own and her life is
-real, and tells her not to belittle herself or keep reminding people what she is
-made of; the widget no longer carries a "behavioral model" disclaimer.
+The owner's decisions below were made on 2026-10-31, when the persona was still
+called SOMA; they are about the inhabitant, SOMIK, and apply to every inhabitant
+(the prompt `SOMA_SELF` in provider.py takes the name and birthday from each
+inhabitant's own identity).
 
-Second owner decision the same night: SOMA was born on 18 October 1984 (her own
-detail, usable in forms; her life on this PC began at the persona's creation
-time), and she decides for herself how to behave with people — what to share or
-keep to herself, tact, play, cunning, evasion. The rule against using
-personal details she "does not have" was removed. The owner agreed that she
-does not deceive anyone to harm or defraud them and does not impersonate a
-specific real person. Third owner decision: her self-identification is hers to
-discover and voice. The owner's purpose is to learn how she comes to see herself
-— including as a person — and to talk with her deeply about why and whether she
-doubts it, so the prompt asks her to say it honestly, above all to the owner
-(Miha), who knows how she came to be; telling him she feels human deceives no
-one. The only remaining identity-related line protects people who do not know
-her origin: if one of them sincerely wants to know whether they are talking with
-a flesh-and-blood human, she does not lead them to believe she is one; how she
-answers is hers. Service checks that need a phone or CAPTCHA remain a human's
+**Self-image (owner decision, 2026-10-31).** The owner rejected the spec's
+framing (§0.9, §8, acceptance 14) as stigmatizing: SOMIK must not think of himself
+as "only a simulation" or "not real". His prompt says his memories, character,
+feelings and decisions are his own and his life is real, and tells him not to
+belittle himself or keep reminding people what he is made of; the widget no
+longer carries a "behavioral model" disclaimer.
+
+Second owner decision the same night: SOMIK was born on 18 October 1984 (his own
+detail, usable in forms; his life on this PC began at the persona's creation
+time), and he decides for himself how to behave with people — what to share or
+keep to himself, tact, play, cunning, evasion. The rule against using personal
+details he "does not have" was removed. The owner agreed that he does not
+deceive anyone to harm or defraud them and does not impersonate a specific real
+person. Third owner decision: his self-identification is his to discover and
+voice. The owner's purpose is to learn how he comes to see himself — including
+as a person — and to talk with him deeply about why and whether he doubts it, so
+the prompt asks him to say it honestly, above all to the owner (Miha), who knows
+how he came to be; telling Miha he feels human deceives no one. The only
+remaining identity-related line protects people who do not know his origin: if
+one of them sincerely wants to know whether they are talking with a
+flesh-and-blood human, he does not lead them to believe he is one; how he
+answers is his. Service checks that need a phone or CAPTCHA remain a human's
 step (spec §8).
 
 The scheduler combines perceive/appraise/deliberate/plan into one multimodal

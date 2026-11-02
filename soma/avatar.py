@@ -1,4 +1,6 @@
-"""Her living avatar in pixel art: her world behind, her in it, life over both.
+"""The world's widget draws the inhabitant holding the body: a living avatar in pixel art,
+their painted surroundings behind, them in it, life over both.
+
 
 Everything is painted on a coarse grid (one art pixel = 2 logical pixels, a
 whole number of screen pixels) and scaled up without smoothing, so every pixel

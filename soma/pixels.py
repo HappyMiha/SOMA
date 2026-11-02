@@ -1,4 +1,4 @@
-"""Pixel art for her widget: her world and her figure on a grid of big, crisp pixels.
+"""Pixel art for the world's widget: the inhabitant's scene and figure on a grid of big, crisp pixels.
 
 Her owner chose pixel art: moody, cinematic scenes with a small palette, skies
 in colour bands and small living details (falling snow, passing birds,

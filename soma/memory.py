@@ -1,4 +1,8 @@
-"""SOMA-owned durable memory; never reads application files or desktop state.
+"""One inhabitant's durable memory, in their home inside the world; never reads
+application files or desktop state.
+
+Identity (unchanging, born once), hash-chained history, goals, memories and
+frames belong to that inhabitant alone (ADR-004).
 
 Recall combines a Unicode lexical index with a derived character-trigram vector
 index (not a neural embedding model). New knowledge and reflections are

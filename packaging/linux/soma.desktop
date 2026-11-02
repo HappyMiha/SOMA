@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Application
-Name=SOMA / SOMIK
-Comment=Persistent digital personality in its own desktop session
+Name=SOMA
+Comment=A desktop world whose inhabitants (SOMIK first) live in your session
 Exec=/opt/soma/SOMA
 Icon=applications-science
 Terminal=false

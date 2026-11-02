@@ -19,8 +19,11 @@ Codex login as a tool-less CLI brain with a CPU VLM fallback; since then the
 owner's Claude Code login for deep work (waking, conversations, something new,
 being stuck or unsure, human checks, reflection, learning), local qwen3.5:4b on a
 GTX 1060 6 GB eGPU (USB4) for routine work, Codex as stand-in (its quota is
-exhausted until 4 Nov). Machine vision (offline Cyrillic OCR) reads her own
-frames. Gates passed live, with evidence in TEST_RESULTS.md:
+exhausted until 4 Nov). Machine vision (offline Cyrillic OCR) reads the
+inhabitant's own frames. Since 2026-11-01 SOMA is the world and SOMIK its first
+inhabitant, with a home, identity and memory of his own (ADR-004); the live
+persona moved into it unchanged. Gates passed live, with evidence in
+TEST_RESULTS.md:
 
 | Gate | Status |
 |---|---|
@@ -35,8 +38,8 @@ frames. Gates passed live, with evidence in TEST_RESULTS.md:
 | 11 packaging | PyInstaller bundle + installed-binary smoke on every build; Inno installer not rebuilt (Inno Setup not installed); Linux 0.2.0 NOT RUN (no WSL) |
 | 12 resources | CPU era: 30–142 MB, ≤ ~6 % of one core over 3 h. GPU era: model 3 GiB in VRAM; Ollama host prompt cache bounded by unloading every 6 local requests (it reached 3.9 GB at 24); 14 h of samples kept, a 24 h sampler with GPU running since 31 Oct 15:40 |
 | 13 long run | Over a day of unattended life with interruptions for upgrades; an uninterrupted 24–72 h run NOT yet complete |
-| §8 own identity | Proton mailbox and Discord account created by SOMA via GUI, CAPTCHAs by a human; account registry in her memory, passwords in the OS vault, owner window to see and fix them |
-| §7.1 experience learning | Procedural skills and reflections formed from her own episodes |
+| §8 own identity | Proton mailbox and Discord account created by SOMIK via GUI, CAPTCHAs by a human; account registry in his memory, passwords in the OS vault per inhabitant, owner window to see and fix them; the people he knows, with trust and his own notes |
+| §7.1 experience learning | Procedural skills and reflections formed from his own episodes |
 
 Known implementation limits: no native Wayland portal/PipeWire adapter; recall is
 lexical plus a character-trigram vector index, not neural embeddings; uncertain

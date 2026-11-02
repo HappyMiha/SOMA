@@ -1,4 +1,6 @@
-"""Her paintings: an image model on this PC's GPU paints her in her world, as she describes it.
+"""The world's painter: an image model on this PC's GPU paints an inhabitant in their scene,
+as the inhabitant describes it.
+
 
 stable-diffusion.cpp (Vulkan build) with SDXL-Lightning (4 steps) and the tiny
 SDXL autoencoder runs locally from %LOCALAPPDATA%\\SOMA-imaging; measured on the

@@ -184,7 +184,7 @@ class HumanInterfacePort:
         self._pressed_keys = set()
         self._pressed_buttons = set()
         self.own_interface = own_interface or OwnInterface()
-        self._pointer = None  # Last position SOMA herself moved the pointer to.
+        self._pointer = None  # Last position the inhabitant holding the body moved the pointer to.
         self.backend = _platform_backend()
         try:
             self._mouse, self._keyboard, self._buttons, self._keys = _input_devices(self.backend)
@@ -193,7 +193,7 @@ class HumanInterfacePort:
 
     @property
     def pointer(self):
-        """Where SOMA herself last moved the pointer (desktop pixels), if anywhere."""
+        """Where the inhabitant holding the body last moved the pointer (desktop pixels), if anywhere."""
         return self._pointer
 
     def _ensure_active(self, cancel_event=None):
