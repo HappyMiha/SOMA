@@ -816,6 +816,19 @@ The complete specification Definition of Done is **not yet satisfied**.
   On the real widget: the whole sky with its moon and star, and «● художник
   відпочиває». 266 tests; installed, smoke passed. His choice of avatar was
   left as he made it.
+* **2026-11-03, the painter paints his mood again.** The owner: that was the
+  wrong direction. The Paint sky is a drawing SOMIK made, and the painter used
+  to paint his mood. What had changed: taking his drawing from the screen had
+  also switched his avatar to it (style picture), and that stopped the painter.
+  Owner's decision (PERSONALITY_AND_LIFE): the avatar is the painter's painting
+  of him. Now a picture he takes from his screen is kept in his memory as his
+  work, whole as he chose it, and his avatar and the painter are unaffected.
+  The style picture is no longer offered, and his memory's older record of it
+  is read as gone. The earlier display of his picture and the «художник
+  відпочиває» status were removed. Installed, smoke passed. On the real widget
+  his drawn figure first stood in the bands. At 17:16 the painter painted him
+  anew for his current theme: a library with a globe and a world map, at his
+  desk. 264 tests.
 
 ## Confirmed
 

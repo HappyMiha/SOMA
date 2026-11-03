@@ -234,8 +234,9 @@ DIARY = {
         f"{d.get('outcome', {}).get('status', 'unknown')} - {d.get('outcome', {}).get('evidence', '')}"),
     "dream": lambda d: f"I dreamt over what I lived: {d.get('chapter', '')}",
     "selfie": lambda d: f"I had myself painted in my world (my avatar now): {d.get('prompt', '')}",
-    "appearance.recorded": lambda d: ("I changed how I look" + (": " + d["description"] if d.get("description") else
-                                      " (a picture of my own)" if d.get("picture") else "") + "."),
+    "appearance.recorded": lambda d: ("I kept a picture I made in my memory." if d.get("picture") and not
+                                      d.get("description") else "I changed how I look" +
+                                      (": " + d["description"] if d.get("description") else "") + "."),
     "habit": lambda d: (f"I kept going ({', '.join(d.get('kinds', []))}) for {d.get('rounds', 0)} of "
                         f"{d.get('planned', 0)} rounds without stopping to think; it ended because "
                         f"{d.get('stopped', '')}"),

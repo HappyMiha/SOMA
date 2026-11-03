@@ -35,6 +35,13 @@ flesh-and-blood human, he does not lead them to believe he is one; how he
 answers is his. Service checks that need a phone or CAPTCHA remain a human's
 step (spec §8).
 
+**Avatar (owner decision, 2026-11-03).** The avatar is the painter's painting of
+SOMIK with his mood in his world (or a drawn figure of him until it is painted).
+Pictures he makes himself in other programs, such as his Paint sky, are his works:
+they are kept in his memory and never replace the painting of him. The style that
+once showed such a picture instead ("picture") is no longer a choice. Where his
+append-only memory still records it, it is read as gone.
+
 The scheduler combines perceive/appraise/deliberate/plan into one multimodal
 decision, then emits one input and obtains a separate visual verification. It
 chooses self/observed/correspondence goals without a task prompt. Uncertainty

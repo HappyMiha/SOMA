@@ -4,8 +4,8 @@ Her owner chose pixel art: moody, cinematic scenes with a small palette, skies
 in colour bands and small living details (falling snow, passing birds,
 lamplight). So:
 
-* every world she shows (a scene a brain painted as SVG, a picture she took
-  from her screen, a selfie from the GPU) is reduced to the grid by area
+* every world she shows (a scene a brain painted as SVG, a selfie from the
+  GPU) is reduced to the grid by area
   averaging and a small palette without dithering. Gradients fall into bands,
   as hand-made pixel art paints them;
 * her figure is a person with human proportions (about seven heads tall),
@@ -98,28 +98,13 @@ def scene_pixels(renderer, width: int, height: int, colors=SCENE_COLORS) -> QIma
     return _reduce(canvas, width, height, colors)
 
 
-def contain(width: float, height: float, target_w: float, target_h: float) -> QRectF:
-    """Where to draw a width×height image whole inside the target, keeping its proportions."""
-    scale = min(target_w / max(width, 1e-6), target_h / max(height, 1e-6))
-    w, h = width * scale, height * scale
-    return QRectF((target_w - w) / 2, (target_h - h) / 2, w, h)
-
-
-def picture_pixels(picture: QImage, width: int, height: int, colors=PICTURE_COLORS, whole=False) -> QImage:
-    """A picture (her own from the screen, or her selfie) as a width×height pixel image.
-
-    A whole one is shown all of it, on its own colour dimmed: live, the wide widget
-    cut her square Paint sky to a plain blue strip and lost its moon."""
+def picture_pixels(picture: QImage, width: int, height: int, colors=PICTURE_COLORS) -> QImage:
+    """A painting of her (her selfie from the GPU) as a width×height pixel image."""
     canvas = QImage(width * SUPERSAMPLE, height * SUPERSAMPLE, QImage.Format.Format_ARGB32_Premultiplied)
     canvas.fill(QColor("#000000"))
-    if whole:
-        average = picture.scaled(1, 1, Qt.AspectRatioMode.IgnoreAspectRatio,
-                                 Qt.TransformationMode.SmoothTransformation).pixelColor(0, 0)
-        canvas.fill(average.darker(160))
     painter = QPainter(canvas)
     painter.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
-    place = contain if whole else lambda *size: cover(*size, 0.5)
-    painter.drawImage(place(picture.width(), picture.height(), canvas.width(), canvas.height()), picture)
+    painter.drawImage(cover(picture.width(), picture.height(), canvas.width(), canvas.height(), 0.5), picture)
     painter.end()
     return _reduce(canvas, width, height, colors)
 

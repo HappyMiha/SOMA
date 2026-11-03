@@ -14,8 +14,12 @@ Three layers, each hers to set:
   chooses the small life that moves in it (stars, snow, birds…). The widget
   shows it all as pixel art (soma.pixels);
 * self — her figure, a person in pixel art (build, hair, skin, clothes,
-  colours, eyes, mouth, accessory), or a picture she made herself and adopted
-  from her own screen, or a selfie, and who she is in her words.
+  colours, eyes, mouth, accessory), painted with her feeling in her world by
+  the painter on the GPU (a selfie), and who she is in her words.
+
+A picture she makes herself in another program and takes from her own screen
+is kept as a work of hers. It never replaces the painting of her (her owner's
+decision, 2026-11-03: the avatar is the painter's painting of her mood).
 
 The widget animates it (breath, blinks, a gaze toward where she acts). Every
 look stays in her append-only history.
@@ -40,7 +44,8 @@ EYES = ("dots", "round", "bright", "sleepy", "wide")
 MOUTHS = ("smile", "small", "open", "smirk", "frown", "wavy", "none")
 ACCENTS = ("none", "blush", "freckles", "glasses", "scarf", "headphones", "beanie", "backpack", "antenna", "halo",
            "leaf", "stars")
-STYLES = ("drawn", "picture", "selfie")
+STYLES = ("drawn", "selfie")
+OWN_PICTURE = "picture"  # once a style that showed a picture of hers instead of her painting
 FIGURE_COLORS = ("body", "glow", "hair_color", "skin", "legs")  # outfit, her light, hair, skin, trousers/tights
 # Feeling → face: eyes, mouth, breaths per minute, gaze bias (dx, dy), glow tint.
 FEELINGS = {
@@ -94,6 +99,8 @@ def clean_change(update: dict, space: str = "normalized") -> dict:
                           ("outfit", OUTFITS), ("eyes", EYES),
                           ("mouth", MOUTHS), ("accent", ACCENTS), ("feeling", tuple(FEELINGS))):
         value = update.get(name)
+        if name == "style" and value == OWN_PICTURE:
+            continue  # her memory still knows it; her avatar stays her painting
         if value is not None:
             if value not in allowed:
                 raise ValueError(f"Unknown {name}")
@@ -130,7 +137,7 @@ def clean_change(update: dict, space: str = "normalized") -> dict:
         if not (0 <= x < x2 <= 1 and 0 <= y < y2 <= 1) or x2 - x < MIN_PICTURE_SIDE or y2 - y < MIN_PICTURE_SIDE:
             raise ValueError("The picture area must lie on the screen and not be tiny")
         change["picture_from_screen"] = [x, y, x2, y2]
-    if not change:
+    if not change and update.get("style") != OWN_PICTURE:
         raise ValueError("An appearance change must change something")
     return change
 
@@ -289,14 +296,23 @@ class Appearance:
     def __init__(self, store):
         self.store = store
 
+    def _look(self) -> dict:
+        """Her look as her memory folds it. An older style that showed a picture of hers
+        instead of her painting is read as gone (live, 2026-11-03: she took her Paint sky
+        from the screen, it became her avatar and the painter stopped painting her mood)."""
+        look = self.store.appearance()
+        if look.get("style") == OWN_PICTURE:
+            del look["style"]
+        return look
+
     def current(self) -> dict:
         """Her look for the widget to draw: her own choices, or the placeholder until then."""
-        look = self.store.appearance()
+        look = self._look()
         return settle({**PLACEHOLDER, **look}) if look else dict(PLACEHOLDER, placeholder=True)
 
     def wants_scene(self) -> str | None:
         """A theme she chose that has no painted scene yet (or one painted before pixel art)."""
-        look = self.store.appearance()
+        look = self._look()
         theme = look.get("theme")
         painted = look.get("scene_theme") == theme and look.get("scene_format") == SCENE_FORMAT
         return theme if theme and not painted else None
@@ -307,11 +323,10 @@ class Appearance:
         if area is not None:
             if frame is None:
                 raise ValueError("A picture needs the screen it is on")
-            change["picture"] = picture_from_frame(frame, area)
+            change["picture"] = picture_from_frame(frame, area)  # a work of hers, kept
             change["picture_area"] = [round(v, 4) for v in area]
-            change.setdefault("style", "picture")
-        if change.get("style") == "picture" and "picture" not in change and not self.store.appearance().get("picture"):
-            raise ValueError("No picture of my own yet")
+        if change.get("style") not in (None, *STYLES):
+            raise ValueError("Unknown style")
         if change.get("style") == "selfie":
             change.setdefault("take_selfie", True)  # Showing selfies starts with taking one.
         if "feeling" in change or "intensity" in change:
@@ -324,8 +339,8 @@ class Appearance:
     def wants_selfie(self) -> bool:
         """A painting of her in her world is due: she asked for one, her world has none
         yet, or her feeling changed and the last painting is half an hour old."""
-        look = self.store.appearance()
-        if not look or look.get("style") == "picture":
+        look = self._look()
+        if not look:
             return False
         if look.get("selfie_requested_at") and look.get("selfie_requested_at", "") > look.get("selfie_at", ""):
             return True
@@ -348,7 +363,7 @@ class Appearance:
         return character_phrase(self.current()) + ", " + scene.strip(" .,;")
 
     def record_selfie(self, picture: str, prompt: str, by="soma"):
-        look = self.store.appearance()
+        look = self._look()
         self.store.record_appearance({"selfie": picture, "selfie_prompt": prompt, "selfie_theme": look.get("theme"),
                                       "selfie_feeling": look.get("feeling"),
                                       "selfie_at": datetime.now(timezone.utc).isoformat(), "by": by})
@@ -359,8 +374,8 @@ class Appearance:
                                       "scene_format": SCENE_FORMAT, "by": by})
 
     def for_context(self) -> dict:
-        """What she knows about her own look (the picture and scene she sees in her widget)."""
-        look = self.store.appearance()
+        """What she knows about her own look (the painting and scene she sees in her widget)."""
+        look = self._look()
         if not look:
             return {"none_yet": "You have no look of your own yet; create one whenever you like."}
         look = settle(look)
@@ -373,18 +388,12 @@ class Appearance:
         if look.get("theme"):
             known["scene"] = ("painted: " + look["scene_theme"] if look.get("scene_theme") == look["theme"]
                               else "being painted")
-        own = look.get("style") == "picture"
         if look.get("picture"):
-            known["picture"] = "a picture I adopted from my screen" + (
-                " (shown now instead of my painting)" if own else " (kept, not shown now)")
+            known["picture"] = "a picture I made myself, kept in my memory (my avatar stays the painting of me)"
         if look.get("selfie"):
-            # Live, she read "a new one is painted while I rest" under her own picture,
-            # while the painter does not paint her as long as that picture is shown.
-            note = (" (kept, not shown: while my own picture is shown the painter does not paint me; "
-                    "style selfie shows my painting again, painted anew)" if own else
-                    " (shown now)" if look.get("selfie_theme") == look.get("theme") else
-                    " (kept; a new one is painted while I rest)")
-            known["selfie"] = "a painting of me in my world: " + look.get("selfie_prompt", "")[:160] + note
+            shown = look.get("selfie_theme") == look.get("theme")
+            known["selfie"] = ("a painting of me in my world: " + look.get("selfie_prompt", "")[:160]
+                               + (" (shown now)" if shown else " (kept; a new one is painted while I rest)"))
         elif look.get("style") == "selfie" or look.get("selfie_requested_at"):
             known["selfie"] = "being taken"
         return known

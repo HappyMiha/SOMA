@@ -119,7 +119,7 @@ soma/                     код світу і життя мешканців
   memory.py               пам'ять одного мешканця в його домі
   people.py, accounts.py, appearance.py   його люди, акаунти й вигляд
   core.py                 спільні типи (кадри, дії)
-tests/                    266 тестів; desktop_e2e.py — живий тест тіла (opt-in)
+tests/                    264 тести; desktop_e2e.py — живий тест тіла (opt-in)
 packaging/                PyInstaller, Inno Setup, .deb, ліцензії, smoke-тести
 docs/                     специфікація, ADR, контракти, результати й докази
 research/                 аудит upstream-проєктів

@@ -4,8 +4,9 @@ their painted surroundings behind, them in it, life over both.
 
 Everything is painted on a coarse grid (one art pixel = 2 logical pixels, a
 whole number of screen pixels) and scaled up without smoothing, so every pixel
-stays crisp at any Windows scale. Her world is a painted scene, a picture of
-her own or a selfie, reduced to a small palette (see soma.pixels). She is a
+stays crisp at any Windows scale. Her world is the painter's painting of her
+in it (her selfie) or a painted scene, reduced to a small palette (see
+soma.pixels). She is a
 person with human proportions, dressed as she chose. Her body speaks: seen
 from behind looking up into her sky when dreamy, a hand to her chin while
 thinking, a book while learning, reaching towards where her hand acts, arms
@@ -160,10 +161,9 @@ class AvatarView(QWidget):
             self._scene_svg = svg
             renderer = QSvgRenderer(QByteArray(svg.encode("utf-8"))) if svg else None
             self._scene = renderer if renderer is not None and renderer.isValid() else None
-        if self.look.get("style") == "picture":
-            data = self.look.get("picture")
-        else:  # the painting of her in her world, while it is of the world she lives in now
-            data = self.look.get("selfie") if self.look.get("selfie_theme") == self.look.get("theme") else None
+        # The painting of her in her world, while it is of the world she lives in now.
+        # Pictures she makes in other programs are her works, never her avatar (her owner).
+        data = self.look.get("selfie") if self.look.get("selfie_theme") == self.look.get("theme") else None
         if data != self._picture_data:
             self._picture_data, self._picture = data, None
             if data:
@@ -260,15 +260,14 @@ class AvatarView(QWidget):
 
     def _world_pixels(self, width: int, height: int) -> QImage:
         if self._shows_picture():
-            # Her own picture is a work of hers, shown whole; a painting is made for this frame.
-            key = ("picture", id(self._picture), width, height, self.look.get("style") == "picture")
+            key = ("picture", id(self._picture), width, height)
         elif self._scene is not None:
             key = ("scene", self._scene_svg, width, height)
         else:
             key = ("bands", self.look.get("glow"), self.look.get("feeling"), width, height)
         if key != self._world_key:
             if key[0] == "picture":
-                world = pixels.picture_pixels(self._picture, width, height, whole=key[4])
+                world = pixels.picture_pixels(self._picture, width, height)
             elif key[0] == "scene":
                 world = pixels.scene_pixels(self._scene, width, height)
             else:

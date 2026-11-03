@@ -30,21 +30,6 @@ def test_any_world_falls_into_a_small_palette_of_bands():
     assert all(len({small.pixel(x, y) for x in range(40)}) == 1 for y in range(20))  # the sky in bands
 
 
-def test_her_own_picture_is_shown_whole_in_the_wide_frame():
-    # Live: her square Paint sky (a moon near the top) in the wide widget was a plain blue strip.
-    sky = canvas(200, 200, "#3f48cc")
-    painter = QPainter(sky)
-    painter.setBrush(QColor("#fff200"))
-    painter.drawEllipse(130, 12, 36, 36)
-    painter.end()
-    moon = lambda image: any(image.pixelColor(x, y).red() > 200 and image.pixelColor(x, y).green() > 200
-                             for y in range(image.height()) for x in range(image.width()))
-    assert not moon(pixels.picture_pixels(sky, 80, 36))                  # a painting covers the frame
-    whole = pixels.picture_pixels(sky, 80, 36, whole=True)
-    assert moon(whole)
-    assert whole.pixelColor(2, 18).blue() < whole.pixelColor(40, 30).blue()  # its colour, dimmed, at the sides
-
-
 def drawn_rows(image):
     rows = [y for y in range(image.height()) if any(image.pixelColor(x, y).alpha() for x in range(image.width()))]
     return rows[0], rows[-1]

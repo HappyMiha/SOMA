@@ -68,16 +68,22 @@ def test_feeling_world_and_self_with_their_whole_history(look):
     assert len(history) == 3 and history[0]["data"]["feeling"] == "dreamy"     # nothing erased
 
 
-def test_a_picture_she_made_is_taken_from_her_own_screen(look):
-    with pytest.raises(ValueError):
-        look.record({"style": "picture"})                    # no picture of her own yet
+def test_a_picture_she_made_is_kept_and_her_avatar_stays_her_painting(look):
+    # Live, 2026-11-03: her Paint sky became her avatar and the painter stopped painting her mood.
+    look.record({"theme": "painting a starry night in Paint", "feeling": "proud"})
     current = look.record({"picture_from_screen": [0.25, 0.25, 0.5, 0.75]}, frame_with_drawing())
-    assert current["style"] == "picture"
+    assert current["style"] == "drawn" and look.wants_selfie()          # her painting goes on
     with Image.open(BytesIO(__import__("base64").b64decode(current["picture"]))) as picture:
         assert picture.size == (256, 256) and picture.getpixel((128, 128)) == (240, 120, 30)
     wide = look.record({"picture_from_screen": [0.0, 0.0, 1.0, 1.0]}, frame_with_drawing())
     with Image.open(BytesIO(__import__("base64").b64decode(wide["picture"]))) as picture:
         assert picture.size == (448, 224)                    # all she chose, not its square middle
+    assert "my avatar stays the painting of me" in look.for_context()["picture"]
+    look.store.record_appearance({"style": "picture"})       # as her memory has it from that day
+    assert look.current()["style"] == "drawn" and look.wants_selfie() and "style" not in look.for_context()
+    assert clean_change({"style": "picture"}) == {}          # no longer a choice, and no error for a decision
+    with pytest.raises(ValueError):
+        look.record({"style": "picture"})
 
 
 def test_a_feeling_settles_unless_she_feels_it_anew(look):
@@ -130,12 +136,8 @@ def test_selfies_are_asked_for_taken_and_kept(look):
     look.record_selfie("UE5HDQo=", "the same drop, arms up")
     look.record({"theme": "learning about Africa"})          # her world moved on: so does her painting
     assert look.wants_selfie() and look.current()["selfie_theme"] == "night sky"
-    look.record({"style": "picture", "picture_from_screen": [0.25, 0.25, 0.5, 0.75]}, frame_with_drawing())
-    assert not look.wants_selfie()                           # she shows her own picture now
-    known = look.for_context()                               # ... and is told so, not "a new one is painted"
-    assert "instead of my painting" in known["picture"] and "does not paint me" in known["selfie"]
-    look.record({"style": "selfie"})
-    assert look.wants_selfie()                               # her painting back, painted anew
+    look.record({"picture_from_screen": [0.25, 0.25, 0.5, 0.75]}, frame_with_drawing())
+    assert look.wants_selfie()                               # a picture she made does not stop her painting
 
 
 def test_a_mild_new_feeling_waits_longer_for_its_painting(look):
@@ -195,7 +197,10 @@ def test_the_avatar_lives_in_every_state(look):
         middle = image.width() // 2
         assert image.width() >= 96 and image.pixelColor(middle, middle).alpha() == 255   # opaque, drawn
     look.record({"picture_from_screen": [0.25, 0.25, 0.5, 0.75]}, frame_with_drawing())
+    look.store.record_appearance({"style": "picture"})       # even as her memory had it on 2026-11-03
     view.set_look(look.current())
-    image = view.grab().toImage()
-    assert image.pixelColor(image.width() // 2, image.height() // 2).red() > 200   # her own picture shown
+    assert not view._shows_picture()                          # her own work is kept; her avatar stays her
+    look.record_selfie("UE5HDQo=", "a small violet drop under the stars")
+    view.set_look(look.current())
+    assert view._picture_data == "UE5HDQo="                    # the painter's painting of her
     app.processEvents()
