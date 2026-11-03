@@ -19,10 +19,11 @@ def test_production_has_no_bypass_imports_or_code_dispatch():
     for path in (Path(__file__).parents[1] / "soma").rglob("*.py"):
         tree = ast.parse(path.read_text("utf-8"))
         # The reviewed exceptions: the inference adapters that start the
-        # subscription CLIs as tool-less brains (see test_cli_brains_cannot_act)
-        # and the local image engine that paints her selfies (see
-        # test_image_engine_only_paints).
-        allowed = {"subprocess"} if path.name in {"cli_brains.py", "imaging.py"} else set()
+        # subscription CLIs as tool-less brains (see test_cli_brains_cannot_act),
+        # the local image engine that paints her selfies (see
+        # test_image_engine_only_paints) and the restart of the world's own local
+        # brain server (see test_brain_host_only_restarts_ollama).
+        allowed = {"subprocess"} if path.name in {"cli_brains.py", "imaging.py", "brain_host.py"} else set()
         forbidden_here = forbidden - allowed
         for node in ast.walk(tree):
             if isinstance(node, ast.Import):
@@ -87,6 +88,32 @@ def test_image_engine_only_paints(tmp_path):
     import soma.imaging as module
     source = inspect.getsource(module)
     assert "shell=True" not in source and source.count("subprocess.Popen(") == 1
+
+
+def test_brain_host_only_restarts_ollama(monkeypatch, tmp_path):
+    """The world may stop Ollama's own two programs and start its tray app again; nothing else."""
+    import inspect
+    import subprocess
+    import soma.brain_host as module
+    from soma.brain_host import OllamaHost, stop_command
+    argv = stop_command()
+    assert Path(argv[0]).name == "taskkill.exe" and argv[1:] == ["/F", "/T", "/IM", "ollama app.exe", "/IM", "ollama.exe"]
+    source = inspect.getsource(module)
+    assert "shell=True" not in source and source.count("subprocess.run(") == 1 and source.count("subprocess.Popen(") == 1
+    app = tmp_path / "Programs" / "Ollama" / "ollama app.exe"
+    app.parent.mkdir(parents=True)
+    app.write_bytes(b"")
+    monkeypatch.setattr(module.sys, "platform", "win32")
+    monkeypatch.setenv("LOCALAPPDATA", str(tmp_path))
+    monkeypatch.setenv("_PYI_APPLICATION_HOME_DIR", "bundle")
+    ran = []
+    monkeypatch.setattr(subprocess, "run", lambda argv, **kw: ran.append(("run", argv, kw)))
+    monkeypatch.setattr(subprocess, "Popen", lambda argv, **kw: ran.append(("start", argv, kw)))
+    for flag in ("CREATE_NO_WINDOW", "DETACHED_PROCESS", "CREATE_NEW_PROCESS_GROUP"):
+        monkeypatch.setattr(subprocess, flag, 0, raising=False)
+    OllamaHost().restart(settle=0)
+    assert [(kind, argv) for kind, argv, _ in ran] == [("run", stop_command()), ("start", [str(app)])]
+    assert all(not kw.get("shell") for _, _, kw in ran) and "_PYI_APPLICATION_HOME_DIR" not in ran[1][2]["env"]
 
 
 def test_claude_brain_cannot_act():

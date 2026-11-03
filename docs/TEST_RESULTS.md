@@ -770,6 +770,29 @@ The complete specification Definition of Done is **not yet satisfied**.
   and did nothing. The dialog was gone by 00:44, and he went back to
   resting. No code change. One "Invalid visual decision" provider error in
   1205 actions that day.
+* **2026-11-03, the local brain on the processor, and self-diagnosis.** The
+  owner said SOMIK was thinking very slowly. After a hard reset at 12:55,
+  Ollama had started before the eGPU was ready. Its log listed only the CPU,
+  and `ollama ps` showed qwen3.5:4b at 100 % CPU: 54 s – 6 min a thought
+  instead of ~10 s. Restarting Ollama found the GTX 1060 (CUDA), and thoughts
+  took 10–15 s again. Now the world diagnoses itself (`soma/health.py`).
+  Every 30 s it asks the local server's own `/api/ps` where the model sits,
+  and every 3 s it notes which brain is thinking, whether the painter paints,
+  and what the body does. The card shows one line of coloured dots, for
+  example «● мозок: GPU · думає ● Claude ● Codex ● художник», with every part
+  in full under «•••» → ЩО ПРАЦЮЄ. A model on the processor that ran on the
+  card here before is unloaded; if it lands there again, Ollama is restarted
+  (`soma/brain_host.py`, a reviewed exception, at most once in 2 h).
+  During the install the PC froze again (during the packaged smoke test's
+  second run, no bugcheck). After the reset Ollama found the card by itself.
+  SOMIK woke as the same persona, and the line showed «мозок: GPU · думає».
+  At that start the painter was "missing" although its files were there: a
+  painter not found is now looked for again every minute. The reinstall
+  showed «● мозок спить … ● малює…», the local model unloaded while the
+  painter held the card. The smoke test passed. 264 tests. The Windows
+  event log shows 8 resets without a clean shutdown since 30 Oct, all
+  without a bugcheck code, and no WHEA error or minidump. The cause is not
+  established.
 
 ## Confirmed
 

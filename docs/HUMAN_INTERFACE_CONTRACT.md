@@ -44,15 +44,23 @@ Linux/X11 uses MSS and explicit xorg input. Wayland is rejected before XWayland
 could create a misleading partial implementation. A future portal adapter must
 preserve this same port.
 
-**Subscription CLI brains.** `soma/cli_brains.py` is the single production module
-allowed to start a process, and it starts only the Codex CLI or the Claude Code CLI
+**Subscription CLI brains.** `soma/cli_brains.py` is one of the three reviewed
+production modules allowed to start a process, and it starts only the Codex CLI or the Claude Code CLI
 as an inference engine using the owner's own login (SOMA never reads their
 credentials). Both are agents, so every tool is disabled (Codex: all tool
 features off, read-only sandbox, empty working directory, no user config/rules,
 ephemeral; Claude Code: `--tools ""`, `--strict-mcp-config`, project-only
 settings in an empty directory, no session persistence, slash commands off).
 Any tool activity in their event streams rejects the answer. `test_contract`
-enforces the module exception and the flags.
+enforces the module exception and the flags. The other two: `soma/imaging.py`
+starts only the painter's own engine with the prompt as one argument, and
+`soma/brain_host.py` (2026-11-03) restarts only the world's local brain server —
+`taskkill /F /T /IM "ollama app.exe" /IM ollama.exe`, then Ollama's tray app —
+when `soma/health.py` finds the local model on the processor although it ran on
+the graphics card here before (unloading it first; never while the painter holds
+the card or while Ollama keeps models that are not SOMA's; at most once in two
+hours). The self-diagnosis reads only SOMA's own state and the local server's own
+HTTP API (`/api/ps`), no process list.
 
 Inference HTTP is only cognition. SQLite, backups, configuration, tray singleton,
 credential vault and power/session APIs operate on SOMA's own implementation.

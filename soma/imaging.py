@@ -40,6 +40,21 @@ def imaging_root() -> Path:
 class Imaging:
     def __init__(self, root: Path | None = None):
         self.root = Path(root) if root else imaging_root()
+        self.last_seconds = None
+        self.painting = False  # the GPU is the painter's right now (soma.health shows it)
+        self._find()
+
+    LOOK_AGAIN = 60  # seconds; live, right after a hard reset the painter was not found once and never again
+
+    def _find(self):
+        self._looked = time.monotonic()
+        self.engine = self.model = self.vae = self.taesd = None
+        try:
+            self._look()
+        except OSError:
+            pass  # Not reachable right now: looked for again in a minute.
+
+    def _look(self):
         names = ("sd-cli.exe", "sd.exe") if sys.platform == "win32" else ("sd-cli", "sd")
         engines = [path for name in names for path in sorted((self.root / "engine").rglob(name))] \
             if (self.root / "engine").exists() else []
@@ -52,10 +67,11 @@ class Imaging:
         # VAE on a GTX 1060; at her widget's 228 pixels the difference is invisible.
         tiny = models / "taesdxl" / "diffusion_pytorch_model.safetensors"
         self.taesd = tiny if tiny.exists() else None
-        self.last_seconds = None
 
     @property
     def available(self) -> bool:
+        if not (self.engine and self.model) and time.monotonic() - self._looked >= self.LOOK_AGAIN:
+            self._find()
         return bool(self.engine and self.model and self.engine.is_file() and self.model.is_file())
 
     def command(self, prompt: str, output: Path, seed: int) -> list[str]:
@@ -77,6 +93,13 @@ class Imaging:
         if not self.available:
             raise RuntimeError("No image engine on this PC")
         started = time.monotonic()
+        self.painting = True
+        try:
+            return self._paint(prompt, seed, deadline, cancel, started)
+        finally:
+            self.painting = False
+
+    def _paint(self, prompt, seed, deadline, cancel, started) -> str:
         flags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
         with tempfile.TemporaryDirectory(prefix="soma-selfie-") as folder:
             output = Path(folder) / "selfie.png"

@@ -490,6 +490,7 @@ class Signals(QObject):
     stopped = Signal()
     failed = Signal(str)
     make_way = Signal()
+    health = Signal(object)
 
 
 STEP_ASIDE_MS = 3 * 60 * 1000  # how long the widget stays out of her way before it goes back
@@ -526,6 +527,8 @@ FEELING_COLORS = {"calm": "#0ea5e9", "dreamy": "#6366f1", "curious": "#0891b2", 
 AVATAR_SIZE = (304, 144)     # the card's full inner width: 228×108 art pixels at 150 %
 STOP_DELAY = 3.0             # seconds before "Все, продовжуй" answers, so a second click cannot end a showing
 TEACH_ICON = "👁"
+# The world's self-diagnosis (soma.health): a dot per part, its colour how it works.
+HEALTH_COLORS = {"ok": "#22c55e", "busy": "#3b82f6", "idle": "#9ca3af", "warn": "#f59e0b", "problem": "#ef4444"}
 ACTIVITY_WORDS = {"thinking": "думає", "acting": "діє", "resting": "відпочиває", "learning": "вчиться",
                   "asleep": "спить", "recovering": "відновлюється", "waking": "прокидається"}
 # Feelings named as nouns: her words about herself are hers to choose.
@@ -558,6 +561,8 @@ class LifeWidget(QWidget):
         self.signals.stopped.connect(self.worker_stopped)
         self.signals.failed.connect(self.show_failure)
         self.signals.make_way.connect(self.step_aside)
+        self.signals.health.connect(self.show_health)
+        self.health = None
         self.setWindowTitle("SOMA")
         self.setWindowIcon(soma_icon())
         # Her own small card on her screen: frameless, opaque, rounded. A status
@@ -619,6 +624,13 @@ class LifeWidget(QWidget):
         self.intention.setTextFormat(Qt.TextFormat.PlainText)
         line.addWidget(self.intention, 1)
         layout.addLayout(line)
+        # What works right now, one dot per part of the world; every part in full in the details.
+        self.health_line = QLabel()
+        self.health_line.setObjectName("health")
+        self.health_line.setTextFormat(Qt.TextFormat.RichText)
+        self.health_line.setWordWrap(True)
+        self.health_line.hide()
+        layout.addWidget(self.health_line)
         self.intention_full = QLabel()
         self.intention_full.setObjectName("intention")
         self.intention_full.setTextFormat(Qt.TextFormat.PlainText)
@@ -636,6 +648,8 @@ class LifeWidget(QWidget):
             layout.addWidget(body)
             self.sections.append((heading, body))
             return body
+        self.health_full = section("ЩО ПРАЦЮЄ")
+        self.health_full.setTextFormat(Qt.TextFormat.RichText)
         self.identity_label = section("ХТО Я")
         self.identity_label.setText("Одна особистість · неперервна історія")
         self.world_theme = section("МІЙ СВІТ")  # her theme; self.world is SOMA itself
@@ -750,6 +764,7 @@ class LifeWidget(QWidget):
                                margin-top: 2px; }}
             QLabel#quote {{ font-family: '{display}'; font-size: 14px; font-weight: 600; }}
             QLabel#small {{ color: {c['muted']}; font-size: 11px; }}
+            QLabel#health {{ color: {c['muted']}; font-size: 11px; }}
             QPushButton#more {{ border: none; color: {c['muted']}; font-size: 12px; font-weight: 800;
                                 border-radius: 13px; background: {c['hover']}; }}
             QPushButton#more:hover {{ background: {c['pressed']}; }}
@@ -936,6 +951,13 @@ class LifeWidget(QWidget):
                                      reader=ScreenReader(), accounts=self.accounts, appearance=self.appearance,
                                      imaging=Imaging(), people=self.people)
             self.kernel.make_way = self.signals.make_way.emit  # the widget steps aside from her hand
+            from soma.brain_host import OllamaHost
+            from soma.health import Health
+            # The world watches its own parts and says plainly what works (and mends a lost GPU).
+            self.health = Health(self.data_dir, provider, imaging=self.kernel.imaging, kernel=self.kernel,
+                                 host=OllamaHost(), publish=self.signals.health.emit,
+                                 journal=self.store.append_event)
+            self.health.start()
             if hasattr(self, "lifecycle") and (self.lifecycle.signals.locked or self.lifecycle.signals.sleeping):
                 self.kernel.suspend()
             self.worker = threading.Thread(target=self.run_life, name="soma-life", daemon=False)
@@ -960,6 +982,9 @@ class LifeWidget(QWidget):
             self.signals.stopped.emit()
 
     def worker_stopped(self):
+        if self.health is not None:
+            self.health.stop()
+            self.health = None
         self.kernel = None
         self.worker = None
         self.appearance = None  # Her memory closes; the avatar keeps its last look.
@@ -1022,6 +1047,30 @@ class LifeWidget(QWidget):
             (f"\nвіддалених сьогодні: {data.get('remote_today', 0)}/{data.get('remote_budget') or '∞'}"
              if data.get("remote_budget") is not None and data.get("remote_today") else "") +
             (f"\n{data['last_error']}" if data.get("last_error") else ""))
+
+    def show_health(self, report):
+        """What works right now (soma.health): a line of dots on the card, every part in the details."""
+        from html import escape
+        parts, remedy = report["parts"], report.get("remedy", "")
+        dot = lambda part: f"<span style='color:{HEALTH_COLORS.get(part.state, '#9ca3af')}'>●</span>"
+        # The body's state is the activity chip already; it joins the line only when something is off.
+        shown = [part for part in parts if part.key != "body" or part.state not in {"ok", "busy"}]
+        line = "&nbsp;&nbsp; ".join(f"{dot(part)}&nbsp;{escape(part.short).replace(' ', '&nbsp;')}" for part in shown)
+        full = "<br>".join(f"{dot(part)} <b>{escape(part.title)}</b> — {escape(part.detail)}" for part in parts)
+        if remedy:
+            full += f"<br><i>{escape(remedy)}</i>"
+        if line != self.health_line.text():
+            if self.isVisible():
+                frame = self.frameGeometry()
+                self._anchor = (frame.bottom(), frame.height() - self.height())  # grow from its corner
+            self.health_line.setText(line)
+            self.health_line.setVisible(bool(line))
+            self.health_line.setToolTip("\n".join(f"{part.title}: {part.detail}" for part in parts) +
+                                        (f"\n{remedy}" if remedy else ""))
+            self.adjustSize()
+        if full != self.health_full.text():
+            self.health_full.setText(full)
+            self._show_sections()
 
     def toggle_teaching(self):
         if not self.kernel:

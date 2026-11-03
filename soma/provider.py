@@ -607,7 +607,10 @@ class ModelProvider:
                                     trust_env=False, follow_redirects=False)
         self.metrics = {"requests": 0, "input_tokens": 0, "output_tokens": 0,
                         "last_latency_seconds": 0, "last_route": "", "last_error": "",
-                        "remote_today": self.budget.used, "remote_budget": config.daily_request_budget}
+                        "remote_today": self.budget.used, "remote_budget": config.daily_request_budget,
+                        # For the world's self-diagnosis (soma.health): the brain asked right
+                        # now, and each brain's last answer: seconds, whether it worked, why not.
+                        "thinking_with": "", "routes": {}}
 
     @property
     def local_only(self) -> bool:
@@ -672,6 +675,28 @@ class ModelProvider:
                               json={"model": model, "keep_alive": 0})
         except httpx.HTTPError:
             pass  # Memory hygiene must never cost a decision.
+
+    def local_placement(self) -> dict | None:
+        """Where the local brain's model sits now, from the local server's own API (/api/ps).
+
+        None when no local Ollama brain is configured; reachable False when the server
+        does not answer. vram < size means part or all of the model runs on the processor."""
+        config = self.config
+        if (config.mode not in {"local", "hybrid"} or not config.local_model or config.local_api == "openai"
+                or self._dialects.get(config.local_endpoint) == "openai"):
+            return None
+        try:
+            response = self._client.get(ollama_root(config.local_endpoint) + "/api/ps", timeout=3)
+            response.raise_for_status()
+            models = response.json().get("models", [])
+        except (httpx.HTTPError, ValueError, AttributeError):
+            return {"reachable": False, "loaded": False, "size": 0, "vram": 0, "others": []}
+        names = {config.local_model, config.local_model if ":" in config.local_model else config.local_model + ":latest"}
+        mine = [m for m in models if isinstance(m, dict) and (m.get("name") in names or m.get("model") in names)]
+        others = [str(m.get("name", "")) for m in models if isinstance(m, dict) and m not in mine]
+        return {"reachable": True, "loaded": bool(mine), "others": others,
+                "size": sum(int(m.get("size", 0) or 0) for m in mine),
+                "vram": sum(int(m.get("size_vram", 0) or 0) for m in mine)}
 
     def _dialect(self, endpoint, route) -> str:
         if route == "deep" or (route == "remote" and self._cli is not None):
@@ -740,7 +765,6 @@ class ModelProvider:
         # Static instructions lead the system message; only the context and
         # pixels change per call (a local server gets one shared system, below).
         system = self._system() + "\n" + instructions
-        error = None
         # A brain that is resting (usage limit) or out of today's budget is
         # skipped while another can think; if none can, the inhabitant rests too.
         def unavailable(route):
@@ -757,7 +781,15 @@ class ModelProvider:
         # from an old memory, the screen's text or anywhere else in the context.
         full_prompt = self.scrub(prompt)
         local_prompt = self.scrub(local_prompt) if local_prompt is not None else None
+        try:
+            return self._ask(routes, system, instructions, full_prompt, local_prompt, frames, local_frames, schema)
+        finally:
+            self.metrics["thinking_with"] = ""
+
+    def _ask(self, routes, system, instructions, full_prompt, local_prompt, frames, local_frames, schema) -> dict:
+        error = None
         for endpoint, model, key, route in routes:
+            self.metrics["thinking_with"] = route
             images = list(frames if route != "local" or local_frames is None else local_frames)
             # A context sized for the small local brain; a brain standing in
             # after it still gets the full one.
@@ -856,6 +888,8 @@ class ModelProvider:
                 self.metrics["last_latency_seconds"] = round(time.monotonic() - started, 3)
                 self.metrics["last_route"] = route
                 self.metrics["last_error"] = ""
+                self.metrics["routes"] = {**self.metrics["routes"], route: {
+                    "seconds": round(time.monotonic() - started, 1), "ok": True, "error": ""}}
                 return value
             except ProviderCancelled:
                 raise
@@ -870,6 +904,8 @@ class ModelProvider:
                 error = f"{route} inference failed ({reason})"
                 self.metrics["last_error"] = error
                 self.metrics["last_latency_seconds"] = round(time.monotonic() - started, 3)
+                self.metrics["routes"] = {**self.metrics["routes"], route: {
+                    "seconds": round(time.monotonic() - started, 1), "ok": False, "error": reason}}
         raise ProviderError(error or "Inference unavailable")
 
     def _action(self, value) -> Action:
