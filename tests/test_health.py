@@ -132,6 +132,19 @@ def test_brains_painter_and_body_say_what_works_now(tmp_path):
     assert part(watcher, "body").short == "очі заплющені"
 
 
+def test_the_painter_rests_while_the_inhabitant_shows_their_own_picture(tmp_path):
+    # Live, 2026-11-03: SOMIK made his Paint sky his avatar; the card said "художник" in green.
+    look = {"style": "picture"}
+    kernel = SimpleNamespace(state=SimpleNamespace(value="AWAKE/AUTONOMOUS"), _private=False, _activity="",
+                             appearance=SimpleNamespace(store=SimpleNamespace(appearance=lambda: dict(look))))
+    watcher = health(tmp_path, FakeProvider(), [0.0], kernel=kernel,
+                     imaging=SimpleNamespace(available=True, painting=False, last_seconds=63.0))
+    painter = part(watcher, "painter")
+    assert (painter.state, painter.short) == ("idle", "художник відпочиває") and "картинка" in painter.detail
+    look["style"] = "selfie"
+    assert part(watcher, "painter").state == "ok"
+
+
 def test_a_painter_not_found_at_start_is_looked_for_again(tmp_path):
     # Live, right after a hard reset: "the painter's engine or model is missing" until the next start.
     from soma.imaging import Imaging

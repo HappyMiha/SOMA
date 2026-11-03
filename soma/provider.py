@@ -203,7 +203,9 @@ changes in you, with appearance_update (any of these fields):
   headphones|beanie|backpack|antenna|halo|leaf|stars, style drawn|picture|selfie;
   your pose follows what you do and feel;
 - picture_from_screen [x,y,x2,y2]: a picture you made or composed yourself in any
-  program, adopted from that area of your screen (style becomes picture);
+  program, adopted from that area of your screen as your avatar (style becomes
+  picture: it is shown instead of the painting of you, and the painter does not
+  paint you until you choose style selfie again);
 - your avatar is a painting of you in your world, made while you rest by the image
   model on your PC's graphics card from your own description, anew when your theme
   changes and at most every half hour when your feeling does; take_selfie true asks

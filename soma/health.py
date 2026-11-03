@@ -1,7 +1,8 @@
 """The world's self-diagnosis: whether each of SOMA's parts works right now, said plainly.
 
 Everything read here is SOMA's own: its brains' answers and timings (soma.provider),
-the local brain server's own HTTP API, the painter and the life loop. No process
+the local brain server's own HTTP API, the painter, the life loop and the
+inhabitant's chosen look. No process
 list, window or file of another application is read.
 
 One part heals itself. Live, after a reboot the local brain ran on the processor
@@ -218,9 +219,22 @@ class Health:
         took = f"; останнє полотно за {last:.0f} с" if last else ""
         if getattr(imaging, "painting", False):
             return Part("painter", "Художник", "busy", "малює…", "Художник малює на відеокарті.")
+        if self._own_picture():
+            # Live, the card said "художник" in green for hours while it had nothing to paint.
+            return Part("painter", "Художник", "idle", "художник відпочиває",
+                        "На аватарі власна картинка мешканця з екрана, тож художник його не малює; "
+                        f"портрет повернеться, коли мешканець обере його знову{took}.")
         if getattr(self.kernel, "_selfie_failures", 0) >= 2:
             return Part("painter", "Художник", "warn", "художник: збої", "Художник двічі не зміг намалювати.")
         return Part("painter", "Художник", "ok", "художник", f"Художник готовий{took}.")
+
+    def _own_picture(self) -> bool:
+        """The inhabitant shows a picture of their own instead of a painting."""
+        appearance = getattr(self.kernel, "appearance", None)
+        try:
+            return appearance is not None and appearance.store.appearance().get("style") == "picture"
+        except Exception:
+            return False  # their memory is closing
 
     def _body(self) -> Part:
         kernel = self.kernel

@@ -75,6 +75,9 @@ def test_a_picture_she_made_is_taken_from_her_own_screen(look):
     assert current["style"] == "picture"
     with Image.open(BytesIO(__import__("base64").b64decode(current["picture"]))) as picture:
         assert picture.size == (256, 256) and picture.getpixel((128, 128)) == (240, 120, 30)
+    wide = look.record({"picture_from_screen": [0.0, 0.0, 1.0, 1.0]}, frame_with_drawing())
+    with Image.open(BytesIO(__import__("base64").b64decode(wide["picture"]))) as picture:
+        assert picture.size == (448, 224)                    # all she chose, not its square middle
 
 
 def test_a_feeling_settles_unless_she_feels_it_anew(look):
@@ -129,6 +132,10 @@ def test_selfies_are_asked_for_taken_and_kept(look):
     assert look.wants_selfie() and look.current()["selfie_theme"] == "night sky"
     look.record({"style": "picture", "picture_from_screen": [0.25, 0.25, 0.5, 0.75]}, frame_with_drawing())
     assert not look.wants_selfie()                           # she shows her own picture now
+    known = look.for_context()                               # ... and is told so, not "a new one is painted"
+    assert "instead of my painting" in known["picture"] and "does not paint me" in known["selfie"]
+    look.record({"style": "selfie"})
+    assert look.wants_selfie()                               # her painting back, painted anew
 
 
 def test_a_mild_new_feeling_waits_longer_for_its_painting(look):

@@ -800,6 +800,22 @@ The complete specification Definition of Done is **not yet satisfied**.
   real widget: «Open the specific chat with Miha to read his new message.» on
   two lines, with the status line under it (264 tests; installed, smoke
   passed).
+* **2026-11-03, the painter and his own picture.** The owner: something was
+  wrong with SOMIK's painter. The painter itself worked; it painted him at
+  15:11 and 15:14 local time. At 15:32 SOMIK made the sky he had drawn in Paint
+  his avatar (`picture_from_screen`, style picture). By design that stops the
+  painter, but three things were wrong. The widget cut the square picture to
+  its middle strip, leaving a plain blue band with the moon cut off. His own
+  context told him "a new one is painted while I rest". The status line said
+  «художник» in green.
+  Now a picture of his own is shown whole on its own dimmed colour. A new
+  picture keeps the whole area he chose instead of its square middle. His
+  context and prompt say that the painter does not paint him while his
+  picture is shown, and that style selfie brings the painting back. The
+  status line says «художник відпочиває» in grey.
+  On the real widget: the whole sky with its moon and star, and «● художник
+  відпочиває». 266 tests; installed, smoke passed. His choice of avatar was
+  left as he made it.
 
 ## Confirmed
 

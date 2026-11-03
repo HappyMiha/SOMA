@@ -98,13 +98,28 @@ def scene_pixels(renderer, width: int, height: int, colors=SCENE_COLORS) -> QIma
     return _reduce(canvas, width, height, colors)
 
 
-def picture_pixels(picture: QImage, width: int, height: int, colors=PICTURE_COLORS) -> QImage:
-    """A picture (her own from the screen, or her selfie) as a width×height pixel image."""
+def contain(width: float, height: float, target_w: float, target_h: float) -> QRectF:
+    """Where to draw a width×height image whole inside the target, keeping its proportions."""
+    scale = min(target_w / max(width, 1e-6), target_h / max(height, 1e-6))
+    w, h = width * scale, height * scale
+    return QRectF((target_w - w) / 2, (target_h - h) / 2, w, h)
+
+
+def picture_pixels(picture: QImage, width: int, height: int, colors=PICTURE_COLORS, whole=False) -> QImage:
+    """A picture (her own from the screen, or her selfie) as a width×height pixel image.
+
+    A whole one is shown all of it, on its own colour dimmed: live, the wide widget
+    cut her square Paint sky to a plain blue strip and lost its moon."""
     canvas = QImage(width * SUPERSAMPLE, height * SUPERSAMPLE, QImage.Format.Format_ARGB32_Premultiplied)
     canvas.fill(QColor("#000000"))
+    if whole:
+        average = picture.scaled(1, 1, Qt.AspectRatioMode.IgnoreAspectRatio,
+                                 Qt.TransformationMode.SmoothTransformation).pixelColor(0, 0)
+        canvas.fill(average.darker(160))
     painter = QPainter(canvas)
     painter.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
-    painter.drawImage(cover(picture.width(), picture.height(), canvas.width(), canvas.height(), 0.5), picture)
+    place = contain if whole else lambda *size: cover(*size, 0.5)
+    painter.drawImage(place(picture.width(), picture.height(), canvas.width(), canvas.height()), picture)
     painter.end()
     return _reduce(canvas, width, height, colors)
 

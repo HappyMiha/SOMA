@@ -260,14 +260,15 @@ class AvatarView(QWidget):
 
     def _world_pixels(self, width: int, height: int) -> QImage:
         if self._shows_picture():
-            key = ("picture", id(self._picture), width, height)
+            # Her own picture is a work of hers, shown whole; a painting is made for this frame.
+            key = ("picture", id(self._picture), width, height, self.look.get("style") == "picture")
         elif self._scene is not None:
             key = ("scene", self._scene_svg, width, height)
         else:
             key = ("bands", self.look.get("glow"), self.look.get("feeling"), width, height)
         if key != self._world_key:
             if key[0] == "picture":
-                world = pixels.picture_pixels(self._picture, width, height)
+                world = pixels.picture_pixels(self._picture, width, height, whole=key[4])
             elif key[0] == "scene":
                 world = pixels.scene_pixels(self._scene, width, height)
             else:

@@ -69,7 +69,7 @@ AMBIENT_WORDS = (("stars", r"star|зор|зір|космос|space|cosmos|galax|
 # Scenes are painted for pixel art (wide, banded, readable silhouettes) since format 2.
 SCENE_FORMAT = 2
 COLOR = re.compile(r"^#[0-9a-fA-F]{6}$")
-PICTURE_SIZE = 256
+PICTURE_BOX = (448, 256)  # her picture keeps the shape she chose, within her widget's wide one
 MIN_PICTURE_SIDE = 0.02  # of the screen: a picture, not a speck
 SCENE_LIMIT = 8000       # characters of SVG
 SVG_ELEMENTS = {"svg", "g", "defs", "title", "desc", "path", "circle", "ellipse", "rect", "line", "polyline",
@@ -169,18 +169,18 @@ def clean_scene(svg: str) -> str:
 
 
 def picture_from_frame(frame, area) -> str:
-    """Her picture cut from her own frame pixels: a square, base64 PNG."""
+    """Her picture cut from her own frame pixels: all of the area she chose, base64 PNG.
+    (Live, a square cut of her wide Paint sky kept its middle and dropped its sides.)"""
     from PIL import Image
     x, y, x2, y2 = area
     with Image.open(BytesIO(frame.png)) as image:
         image = image.convert("RGB")
         box = (round(x * image.width), round(y * image.height), round(x2 * image.width), round(y2 * image.height))
         piece = image.crop(box)
-    side = min(piece.size)
-    left, top = (piece.width - side) // 2, (piece.height - side) // 2
-    square = piece.crop((left, top, left + side, top + side)).resize((PICTURE_SIZE, PICTURE_SIZE))
+    scale = min(PICTURE_BOX[0] / piece.width, PICTURE_BOX[1] / piece.height)
+    kept = piece.resize((max(1, round(piece.width * scale)), max(1, round(piece.height * scale))))
     buffer = BytesIO()
-    square.save(buffer, "PNG", optimize=True)
+    kept.save(buffer, "PNG", optimize=True)
     return base64.b64encode(buffer.getvalue()).decode("ascii")
 
 
@@ -373,13 +373,18 @@ class Appearance:
         if look.get("theme"):
             known["scene"] = ("painted: " + look["scene_theme"] if look.get("scene_theme") == look["theme"]
                               else "being painted")
+        own = look.get("style") == "picture"
         if look.get("picture"):
             known["picture"] = "a picture I adopted from my screen" + (
-                " (shown now)" if look.get("style") == "picture" else " (kept, not shown now)")
+                " (shown now instead of my painting)" if own else " (kept, not shown now)")
         if look.get("selfie"):
-            shown = look.get("style") != "picture" and look.get("selfie_theme") == look.get("theme")
-            known["selfie"] = ("a painting of me in my world: " + look.get("selfie_prompt", "")[:160]
-                               + (" (shown now)" if shown else " (kept; a new one is painted while I rest)"))
+            # Live, she read "a new one is painted while I rest" under her own picture,
+            # while the painter does not paint her as long as that picture is shown.
+            note = (" (kept, not shown: while my own picture is shown the painter does not paint me; "
+                    "style selfie shows my painting again, painted anew)" if own else
+                    " (shown now)" if look.get("selfie_theme") == look.get("theme") else
+                    " (kept; a new one is painted while I rest)")
+            known["selfie"] = "a painting of me in my world: " + look.get("selfie_prompt", "")[:160] + note
         elif look.get("style") == "selfie" or look.get("selfie_requested_at"):
             known["selfie"] = "being taken"
         return known
