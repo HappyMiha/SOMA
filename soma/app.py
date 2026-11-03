@@ -8,7 +8,7 @@ import sys
 import threading
 import time
 
-from PySide6.QtCore import QLockFile, QObject, QRectF, QThread, QTimer, Qt, Signal
+from PySide6.QtCore import QLockFile, QObject, QRect, QRectF, QThread, QTimer, Qt, Signal
 from PySide6.QtGui import QAction, QColor, QCloseEvent, QFontDatabase, QIcon, QImage, QPainter, QPen, QPixmap
 from PySide6.QtNetwork import QLocalServer, QLocalSocket
 from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QDialog,
@@ -527,6 +527,7 @@ FEELING_COLORS = {"calm": "#0ea5e9", "dreamy": "#6366f1", "curious": "#0891b2", 
 AVATAR_SIZE = (304, 144)     # the card's full inner width: 228×108 art pixels at 150 %
 STOP_DELAY = 3.0             # seconds before "Все, продовжуй" answers, so a second click cannot end a showing
 TEACH_ICON = "👁"
+INTENTION_LINES = 4          # what she does, on the compact card; all of it under "•••"
 # The world's self-diagnosis (soma.health): a dot per part, its colour how it works.
 HEALTH_COLORS = {"ok": "#22c55e", "busy": "#3b82f6", "idle": "#9ca3af", "warn": "#f59e0b", "problem": "#ef4444"}
 ACTIVITY_WORDS = {"thinking": "думає", "acting": "діє", "resting": "відпочиває", "learning": "вчиться",
@@ -617,13 +618,16 @@ class LifeWidget(QWidget):
         for chip in (self.state_label, self.feeling):
             chip.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)  # capsules, never stretched
             line.addWidget(chip)
-        line.addStretch(0)
-        # What she is doing: one elided line beside the chips, the whole text in the details.
+        line.addStretch(1)
+        layout.addLayout(line)
+        # What she is doing, across the card under the chips: up to INTENTION_LINES lines on the
+        # compact card, all of it in the details. Live, one line beside the chips cut almost every
+        # intention ("Keep my hands off Miha's w…") and her owner could not read what she did.
         self.intention = QLabel()
         self.intention.setObjectName("intention")
         self.intention.setTextFormat(Qt.TextFormat.PlainText)
-        line.addWidget(self.intention, 1)
-        layout.addLayout(line)
+        self.intention.setWordWrap(True)
+        layout.addWidget(self.intention)
         # What works right now, one dot per part of the world; every part in full in the details.
         self.health_line = QLabel()
         self.health_line.setObjectName("health")
@@ -631,11 +635,6 @@ class LifeWidget(QWidget):
         self.health_line.setWordWrap(True)
         self.health_line.hide()
         layout.addWidget(self.health_line)
-        self.intention_full = QLabel()
-        self.intention_full.setObjectName("intention")
-        self.intention_full.setTextFormat(Qt.TextFormat.PlainText)
-        self.intention_full.setWordWrap(True)
-        layout.addWidget(self.intention_full)
         self._intention_text = "Налаштуйте модель, щоб я могла досліджувати свій ПК."
         self.sections = []
         def section(title):
@@ -720,9 +719,8 @@ class LifeWidget(QWidget):
             frame = self.frameGeometry()
             self._anchor = (frame.bottom(), frame.height() - self.height())  # edge, title-bar height
         self._expanded = expanded
-        for label in (self.detail, self.metrics, self.intention_full):
+        for label in (self.detail, self.metrics):
             label.setVisible(expanded)
-        self.intention.setVisible(not expanded)
         self._show_sections()
         self.more.setText("—" if expanded else "•••")
         self.show_intention(self._intention_text)
@@ -854,14 +852,33 @@ class LifeWidget(QWidget):
     def show_intention(self, text):
         self._intention_text = text or ""
         self.intention.setToolTip(self._intention_text)
-        self.intention_full.setText(self._intention_text)
-        # One line beside her chips: what is left of the card's inner width.
-        chips = self.state_label.sizeHint().width() + 6
-        if not self.feeling.isHidden():
-            chips += self.feeling.sizeHint().width() + 6
-        width = max(40, AVATAR_SIZE[0] - chips - 2)
-        self.intention.setText(self.intention.fontMetrics().elidedText(
-            self._intention_text, Qt.TextElideMode.ElideRight, width))
+        shown = self._intention_text if self._expanded else self._fit_lines(self._intention_text, INTENTION_LINES)
+        if shown != self.intention.text():
+            if self.isVisible():
+                frame = self.frameGeometry()
+                self._anchor = (frame.bottom(), frame.height() - self.height())  # grow from its corner
+            self.intention.setText(shown)
+            self.adjustSize()
+
+    def _fit_lines(self, text, lines):
+        """The text wrapped across the card, cut with "…" after the given number of lines."""
+        self.intention.ensurePolished()  # measured in the card's own font, not the default one
+        metrics = self.intention.fontMetrics()
+        def height(candidate):
+            return metrics.boundingRect(QRect(0, 0, AVATAR_SIZE[0], 10_000), Qt.TextFlag.TextWordWrap,
+                                        candidate).height()
+        limit = metrics.lineSpacing() * lines + 1
+        if height(text) <= limit:
+            return text
+        words = text.split(" ")
+        low, high = 0, len(words)
+        while low < high:  # the most words that still fit with the ellipsis
+            middle = (low + high + 1) // 2
+            if height(" ".join(words[:middle]) + "…") <= limit:
+                low = middle
+            else:
+                high = middle - 1
+        return " ".join(words[:low]).rstrip(" ,.;:—-") + "…"
 
     def show_failure(self, message):
         self.state_label.setText("Потрібне відновлення")

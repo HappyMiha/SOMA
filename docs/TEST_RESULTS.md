@@ -793,6 +793,13 @@ The complete specification Definition of Done is **not yet satisfied**.
   event log shows 8 resets without a clean shutdown since 30 Oct, all
   without a bugcheck code, and no WHEA error or minidump. The cause is not
   established.
+* **2026-11-03, what he does, in full.** The owner: the text saying what
+  SOMIK is doing was always cut. It was one line beside the chips, for
+  example «Keep my hands off Miha's w…». It now runs across the card under the
+  chips, up to four lines on the compact card and all of it under «•••». On the
+  real widget: «Open the specific chat with Miha to read his new message.» on
+  two lines, with the status line under it (264 tests; installed, smoke
+  passed).
 
 ## Confirmed
 

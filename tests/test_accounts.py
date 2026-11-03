@@ -87,9 +87,17 @@ def test_the_widget_stays_small_beside_her_screen(tmp_path, monkeypatch):
         widget.update_status({"state": "AWAKE/AUTONOMOUS", "intention": "Reading", "detail": "", "cycles": 2,
                               "inference": {}, "activity": "acting"})
         assert widget.teach.width() <= 40
-        widget.show_intention("Continue reading the article about Cassiopeia below the star chart " * 3)
-        assert widget.intention.text().endswith("…") and "Cassiopeia" in widget.intention.toolTip()
+        widget.show_intention("Keep my hands off Miha's window while he reads")   # live, cut to "…Miha's w…"
+        assert widget.intention.text() == "Keep my hands off Miha's window while he reads"
+        long = "Continue reading the article about Cassiopeia below the star chart " * 6
+        widget.show_intention(long)
+        application.processEvents()
+        shown = widget.intention.text()
+        assert shown.endswith("…") and len(shown) > 120 and "Cassiopeia" in widget.intention.toolTip()
+        lines = widget.intention.height() / widget.intention.fontMetrics().lineSpacing()
+        assert 3 <= lines < 5 and widget.intention.width() >= 300          # across the card, at most four lines
         widget.set_expanded(True)
+        assert widget.intention.text() == long                                # all of it in the details
         application.processEvents()
         assert widget.detail.isVisible() and widget.frameGeometry().height() > compact.height()
         assert widget.frameGeometry().bottomRight() == compact.bottomRight()     # anchored to its corner
