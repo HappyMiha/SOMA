@@ -51,6 +51,11 @@ def test_the_model_judges_what_came_up_and_stops_for_what_needs_a_look():
     alarmed = Reflex(transport=ollama({"asks": .08, "attention": .75}))
     verdict = alarmed.judge("key l", "I move", ["Spotted zombie! Safe mode is on."])
     assert not verdict["go_on"] and "needs a look" in verdict["why"] and "zombie" in verdict["why"]
+    assert verdict["why"].startswith("my reflex")   # a guess, said as one
+    # A lone scrap of an interface ("kills0" from the game's bar) is the rule's, not the model's.
+    asked = []
+    scrap = Reflex(transport=ollama({"asks": .01, "attention": .69}, asked=asked))
+    assert scrap.judge("key k", "I step north", ["kills0"]) == {"go_on": True, "why": "", "by": "rule"} and not asked
 
 
 def test_a_silent_model_leaves_the_judgment_to_the_rule_and_is_looked_for_later():

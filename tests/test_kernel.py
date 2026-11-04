@@ -557,7 +557,8 @@ def plan_decision(*steps, first=None):
 
 
 def visibly_changing(kernel):
-    shades = iter(range(40, 250, 30))
+    from itertools import cycle
+    shades = cycle(range(40, 250, 30))
     kernel._settle = lambda before: make_frame((next(shades),) * 3)  # every step changes the screen
 
 
@@ -708,6 +709,76 @@ def test_thinking_about_every_single_key_is_pointed_out(kernel):
     kernel.provider.decide = one_key
     kernel.cycle()
     assert seen[-1] is None
+
+
+def game_decision(first, *steps):
+    return Decision("Shelter", "Explore", {"origin": "self", "motive": "play", "description": "Explore the shelter",
+        "priority": .6, "expected_outcome": "The way out found"}, first, .1, 3, (), (), tuple(steps))
+
+
+def routine_lane(kernel, *, rethink=False, keys=("l", "l", "l")):
+    """A routine lane that plans walking on (or hands the moment back)."""
+    asked = []
+    def plan(frame, context, goal, with_image=False):
+        asked.append((context, goal))
+        step = lambda key: Action("key", {"key": key}, "")
+        return Decision("Corridor", "Walk on", goal, Action("key", {"key": keys[0]}, "I move on"), .1, 3, (), (),
+                        tuple(map(step, keys[1:])), rethink=rethink)
+    kernel.provider.continue_routine = plan
+    return asked
+
+
+def test_a_routine_goes_on_in_the_routine_lane_and_the_whole_mind_looks_again_soon(kernel):
+    # Live, 2026-11-04: a whole decision read ~9,000 tokens, 16 s for one key in the game.
+    visibly_changing(kernel)
+    whole = []
+    kernel.provider.decide = lambda *args: whole.append(1) or game_decision(
+        Action("key", {"key": "l"}, "I move east"), Action("key", {"key": "l"}, ""))
+    asked = routine_lane(kernel)
+    kernel.cycle()                       # her whole mind chose the walk
+    assert whole == [1] and not asked
+    for _ in range(3):
+        kernel.cycle()                   # the routine lane plans on
+    assert whole == [1] and len(asked) == 3
+    context, goal = asked[0]
+    assert set(context) <= {"goal", "intention", "recent", "screen_text", "unresolved_actions", "my_widget"}
+    assert "people" not in context and goal["description"] == "Explore the shelter"
+    sights = [e["data"]["sight"] for e in kernel.store.events(limit=200) if e["kind"] == "experience"
+              and not e["data"].get("plan")]
+    assert [s.get("lane") for s in sights] == [None, "routine", "routine", "routine"]
+    import soma.kernel as kernel_module
+    for _ in range(kernel_module.ROUTINE_STEPS):
+        kernel.cycle()
+    assert len(whole) == 2               # after ROUTINE_STEPS her whole mind looks again
+
+
+def test_the_routine_lane_hands_back_at_once_and_closes_on_anything_new(kernel):
+    visibly_changing(kernel)
+    whole = []
+    kernel.provider.decide = lambda *args: whole.append(1) or game_decision(
+        Action("key", {"key": "l"}, "I move east"))
+    routine_lane(kernel, rethink=True)
+    kernel.cycle()
+    kernel.cycle()                       # the lane hands back: the whole mind decides this same moment
+    assert whole == [1, 1]
+    assert any(e["kind"] == "routine_handed_back" for e in kernel.store.events(limit=100))
+    asked = routine_lane(kernel)
+    kernel._deep_next = True             # something new appeared while she rested
+    kernel.cycle()
+    assert not asked and len(whole) == 3
+
+
+def test_a_reflex_stop_ends_the_routine(kernel):
+    visibly_changing(kernel)
+    kernel.reader = ScreensReader(["Shelter"], ["Shelter"], ["Shelter"], ["Shelter", "Spotted zombie!"])
+    kernel.reflex = FakeReflex(go_on=False)
+    east = Action("key", {"key": "l"}, "I move east")
+    kernel.provider.decide = lambda *args: game_decision(east, east, east)
+    asked = routine_lane(kernel)
+    kernel.cycle()
+    assert kernel._lane is None and len(kernel.port.executed) == 2   # the zombie ended the walk and the routine
+    kernel.cycle()
+    assert not asked
 
 
 def test_the_reflex_gives_the_card_to_the_painter(kernel):

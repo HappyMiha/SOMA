@@ -131,16 +131,22 @@ class Reflex:
         clearly = next((line for line in appeared if _asks_clearly(line)), None)
         if clearly:  # Laya missed a "(Y/n)" prompt when measured; the rule never does
             return {"go_on": False, "why": f'new text asks: "{clearly.strip()[:120]}"', "by": "rule"}
+        # A lone word is a scrap of an interface the eye picked up (live, "kills0" from the
+        # game's bar: "needs attention" 0.69 alone, 0.05 as the whole bar); the rule judges it.
+        sentences = [line for line in appeared if len(line.split()) >= 2]
+        if not sentences:
+            return rule(appeared)
         state = (f"After the input {step}" + (f" (expected: {expected})" if expected else "")
-                 + ", this text came up on the screen:\n" + "\n".join(appeared)[-STATE_CHARS:])
+                 + ", this text came up on the screen:\n" + "\n".join(sentences)[-STATE_CHARS:])
         likely = self._ask(state, QUESTIONS)
         if likely is None:
             return rule(appeared)
         stop = [name for name, value in likely.items() if value >= STOP_AT]
-        newest = appeared[-1].strip()[:120]
+        newest = sentences[-1].strip()[:120]
+        # Said as what it is, a quick guess: live, SOMIK took a reflex's stop for a real prompt.
         why = ("" if not stop else
-               f'new text asks something: "{newest}"' if "asks" in stop else
-               f'new text needs a look: "{newest}"')
+               f'my reflex took the new text "{newest}" for a question' if "asks" in stop else
+               f'my reflex thought the new text "{newest}" needs a look')
         return {"go_on": not stop, "why": why, "by": "laya", **{name: round(v, 3) for name, v in likely.items()}}
 
     def outcome(self, step: str, expected: str, appeared, vanished=()) -> dict | None:

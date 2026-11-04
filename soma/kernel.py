@@ -164,6 +164,13 @@ PLAN_KINDS = frozenset({"key", "hotkey", "type_text", "type_secret", "type_new_s
 # Live, right after: the small brain still chose one key per thought (45 s a square).
 # This many single-key decisions in ten minutes are pointed out to it.
 ONE_KEY_DECISIONS = 3
+# The routine lane (provider.continue_routine) plans the next inputs of a routine her
+# whole mind chose, from a short prompt (a whole decision read ~9,000 tokens, 16 s a
+# key on SOMIK's GPU). At least after this many of its plans, or this long, she looks
+# with her whole mind again: messages, her people, her other goals.
+ROUTINE_STEPS = 6
+ROUTINE_SECONDS = 180
+ROUTINE_OPENERS = PLAN_KINDS | {"scroll"}  # a routine starts at the keyboard or the wheel
 
 RECOVERY_ATTEMPTS = 3
 MIN_TEXT_LINES = 3      # Fewer readable lines: the screen is mostly graphical, send the picture.
@@ -321,6 +328,8 @@ class LifeKernel:
         self._no_effect = []  # (signature, monotonic time, words)
         self._clicks = []  # (signature, monotonic time, words, what she expected) of recent clicks
         self._single_keys = []  # monotonic times of recent decisions that pressed one key and stopped
+        self._lane = None  # {"goal_id", "since", "steps"}: the routine the routine lane plans on
+        self._reflex_stopped = False  # the last plan was ended by the reflex (something came up)
         self._unanswered = []  # (kind, monotonic time) of inputs in a row that changed nothing
         self._unsure_looks = 0  # unsure decisions in a row that looked again instead of acting
         self.status_callback = status or (lambda value: None)
@@ -468,6 +477,7 @@ class LifeKernel:
     def request_teaching(self):
         # Synchronous input inhibition: never wait for the model/network to return.
         self.port.set_observing(True)
+        self._lane = None
         self._epoch += 1
         self._teach.set()
 
@@ -480,6 +490,7 @@ class LifeKernel:
 
     def suspend(self):
         self.port.set_observing(True)
+        self._lane = None
         self._epoch += 1
         self._sleep.set()
         self._resume.clear()
@@ -820,10 +831,13 @@ class LifeKernel:
         # routine steps that text replaces the screenshot sent to the brain;
         # the picture still goes when it is needed (see _needs_image).
         with_image, lines = True, []
+        looked = time.monotonic()
         if self.reader is not None:
             # Her own widget's text (her name, her intention) is not a page: live, the routine
             # brain read her intention there as a link and clicked it four times in an hour.
             lines = self._outside_own_widget(self._infer(self.reader.read, frame), frame)
+        read_seconds = time.monotonic() - looked
+        if self.reader is not None:
             if len(lines) >= MIN_TEXT_LINES:
                 space = getattr(config, "coordinate_space", "normalized")
                 context["screen_text"] = describe(lines, space, 60 if self._compact else 160)
@@ -871,7 +885,11 @@ class LifeKernel:
                 local_context["screen_unresponsive"] = stuck
             self._deep_next = True
         deep = (True,) if self._deep_next and getattr(self.provider, "routes_by_job", False) is True else ()
-        if local_context is not None:
+        thinking = time.monotonic()
+        decision = self._routine(frame, lines, with_image) if self._lane_open(lines) else None
+        if decision is not None:
+            pass  # The routine lane planned on; her whole mind looks again soon or when anything comes up.
+        elif local_context is not None:
             # If the remote brain is unavailable, the small local one must get a
             # context that fits its window rather than refusing every decision.
             decision = self._infer(self.provider.decide, frame, context, local_context, with_image, *deep)
@@ -879,6 +897,7 @@ class LifeKernel:
             decision = self._infer(self.provider.decide, frame, context, None, with_image, *deep)
         else:
             decision = self._infer(self.provider.decide, frame, context)
+        thought_seconds = time.monotonic() - thinking
         routed = getattr(self.provider, "metrics", {}).get("last_route", "")
         about = " ".join((decision.scene, decision.intention, decision.action.expected))
         reason = ("human check" if HUMAN_CHECK.search(about) else
@@ -912,7 +931,13 @@ class LifeKernel:
         self._passed = []  # She has now thought about what she read.
         self._want_image = bool(getattr(decision, "need_image", False))
         self._sight = {"picture": with_image, "text_lines": len(lines),
-                       "brain": getattr(self.provider, "metrics", {}).get("last_route", "")}
+                       "brain": getattr(self.provider, "metrics", {}).get("last_route", ""),
+                       # Where the thought's time went, so her speed is measured, not guessed.
+                       "took": {**dict(getattr(self.provider, "metrics", {}).get("last_timing") or {}),
+                                "ocr": round(read_seconds, 2), "think": round(thought_seconds, 2)},
+                       **({"lane": "routine"} if self._lane is not None and self._lane.get("now") else {})}
+        if self._lane is not None:
+            self._lane["now"] = False
         self.intention = decision.intention
         known_goals = {g["id"]: g for g in self.store.goals()}
         if decision.uncertainty <= 0.5:
@@ -1067,6 +1092,12 @@ class LifeKernel:
         outcome, after = self._perform(action, fresh, goal_id, decision.scene, quick=quick)
         after, outcome = self._plan(decision, action, goal_id, fresh, after, outcome, quick)
         after, outcome = self._habit(decision, action, goal_id, after, outcome)
+        # A routine her whole mind chose at the keyboard goes on in the routine lane;
+        # anything that did not simply work, or that the reflex stopped, ends it.
+        if outcome["status"] != "success" or self._reflex_stopped:
+            self._lane = None
+        elif self._lane is None and action.kind in ROUTINE_OPENERS and decision.goal.get("origin") != "correspondence":
+            self._lane = {"goal_id": goal_id, "since": time.monotonic(), "steps": 0}
         # Reflection costs the slow local brain a minute; while it does the
         # thinking, she reflects twice an hour rather than every five minutes.
         local = self._compact or getattr(self.provider, "thinking_locally", False) is True
@@ -1336,6 +1367,55 @@ class LifeKernel:
         return (f"{here[-1][2]}: clicked {count} times in the last quarter hour, each time expecting: {hoped}. "
                 "Look at what is really there before clicking it again.")
 
+    def _lane_open(self, lines) -> bool:
+        """Whether the routine lane plans this moment: a routine of hers is going on and
+        nothing calls for her whole mind (checked after everything that sets _deep_next)."""
+        lane = self._lane
+        if lane is None or not hasattr(self.provider, "continue_routine"):
+            return False
+        goal = next((g for g in self.store.goals() if g.get("id") == lane["goal_id"]), None)
+        if (self._deep_next or self._unsure_looks or goal is None or goal.get("status", "active") != "active"
+                or lane["steps"] >= ROUTINE_STEPS or time.monotonic() - lane["since"] >= ROUTINE_SECONDS
+                or any(UNREAD.search(line["text"]) for line in lines)):
+            self._lane = None
+            return False
+        return True
+
+    def _routine(self, frame, lines, with_image):
+        """The next inputs of her routine from the routine lane, or None for her whole mind."""
+        lane = self._lane
+        goal = next(g for g in self.store.goals() if g.get("id") == lane["goal_id"])
+        space = getattr(getattr(self.provider, "config", None), "coordinate_space", "normalized")
+        context = {"goal": {key: goal[key] for key in ("description", "expected_outcome") if goal.get(key)},
+                   "intention": self.intention, "recent": self._diary(6, 160),
+                   "screen_text": describe(lines, space, 60)}
+        unresolved = [{"input": in_space(item["action"], space), "when": _ago(item["at"])}
+                      for item in self.store.unresolved_actions() if _seconds_since(item["at"]) < 600][-3:]
+        if unresolved:
+            context["unresolved_actions"] = unresolved
+        widget = self._own_widget_area(frame, space)
+        if widget:
+            context["my_widget"] = widget
+        shown = {key: goal[key] for key in ("id", "origin", "motive", "description", "priority", "expected_outcome")
+                 if key in goal}
+        try:
+            decision = self._infer(self.provider.continue_routine, frame, context, shown, with_image)
+        except ProviderCancelled:
+            raise
+        except ProviderError as exc:
+            self.store.append_event("routine_lane_failed", {"reason": str(exc)[:200]})
+            self._lane = None
+            return None
+        lane["steps"] += 1
+        if decision.rethink or decision.uncertainty > 0.5:
+            # Something calls for her whole mind: it looks at this same moment.
+            self.store.append_event("routine_handed_back", {"scene": decision.scene[:200],
+                                                            "steps": lane["steps"]})
+            self._lane = None
+            return None
+        lane["now"] = True
+        return decision
+
     def _one_key_at_a_time(self) -> str | None:
         """Several decisions in a row that each pressed one key and then stopped to think."""
         now = time.monotonic()
@@ -1371,6 +1451,7 @@ class LifeKernel:
         happening, new text that asks something (the next key could answer it) or
         needs a look, a refusal, teaching, sleep or shutdown."""
         steps = tuple(decision.follow_up)
+        self._reflex_stopped = False
         if not steps:
             return after, outcome
         done, stopped = 1, "all steps done"
@@ -1381,7 +1462,7 @@ class LifeKernel:
                 stopped = outcome.get("evidence", "a step did not work") or "a step did not work"
                 break
             if verdict is not None and not verdict["go_on"]:
-                stopped = verdict["why"]
+                stopped, self._reflex_stopped = verdict["why"], True
                 break
             if self.recorder.active or self._teach.is_set() or self._sleep.is_set() or self.stop_event.is_set():
                 stopped = "I was interrupted"
@@ -1402,7 +1483,7 @@ class LifeKernel:
             if outcome["status"] != "success":
                 stopped = outcome.get("evidence", "the last step did not work") or "the last step did not work"
             elif verdict is not None and not verdict["go_on"]:
-                stopped = verdict["why"]
+                stopped, self._reflex_stopped = verdict["why"], True
         self.store.append_event("plan", {"goal_id": goal_id, "done": done, "planned": 1 + len(steps),
                                          "steps": [_step_words(s) for s in (action, *steps)][:16],
                                          "stopped": stopped})

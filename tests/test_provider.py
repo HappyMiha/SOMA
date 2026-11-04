@@ -651,6 +651,40 @@ def test_decision_may_carry_a_short_plan_of_keyboard_steps():
     provider.close()
 
 
+def test_the_routine_lane_asks_with_a_short_prompt_and_may_hand_back():
+    # Live: a whole decision read ~9,000 tokens (16 s a key); the lane sends only the routine.
+    seen = []
+    plan = {"scene": "Dark corridor", "intention": "Walk east", "uncertainty": .2, "rethink": False,
+            "action": {"kind": "key", "args": {"key": "l"}, "expected": "I move east"},
+            "then": [{"kind": "key", "args": {"key": "l"}}] * 5}
+    def handler(request):
+        seen.append(json.loads(request.content))
+        if request.url.path == "/api/chat":
+            return httpx.Response(200, json={"message": {"content": json.dumps(plan)}, "done_reason": "stop",
+                                             "prompt_eval_count": 900, "eval_count": 80,
+                                             "prompt_eval_duration": 1.5e9, "eval_duration": 3.2e9})
+        return httpx.Response(200, json={})
+    provider = ModelProvider(local_config(local_api="ollama", local_unload_every=0),
+                             transport=httpx.MockTransport(handler))
+    goal = {"id": "g-1", "origin": "self", "description": "Explore the shelter", "priority": .6}
+    decision = provider.continue_routine(frame(), {"goal": {"description": "Explore the shelter"},
+                                                   "screen_text": ["120,40 Shelter"]}, goal)
+    assert decision.goal == goal and len(decision.follow_up) == 5 and not decision.rethink
+    assert all(step.expected == "" for step in decision.follow_up)   # plan steps need no words
+    chat = [body for body in seen if "messages" in body][-1]
+    system = chat["messages"][0]["content"]
+    assert system.startswith("You plan the next inputs of SOMIK") and "TASK: perceive" not in system
+    assert len(system) < 4000 and "people" not in chat["messages"][1]["content"]
+    assert provider.metrics["last_timing"]["read"] == 1.5 and provider.metrics["last_timing"]["write_tokens"] == 80
+    plan.update(rethink=True, action={"kind": "wait", "args": {"seconds": 1}})
+    plan.pop("then")
+    assert provider.continue_routine(frame(), {}, goal).rethink
+    plan["action"] = {"kind": "type_secret", "args": {"account": "x"}, "expected": "typed"}
+    with pytest.raises(ProviderError):
+        provider.continue_routine(frame(), {}, goal)   # a password is the whole brain's business
+    provider.close()
+
+
 def test_plan_tail_schema_allows_only_keyboard_scroll_and_wait():
     from soma.provider import decide_schema
     tail = decide_schema("per_mille")["properties"]["then"]

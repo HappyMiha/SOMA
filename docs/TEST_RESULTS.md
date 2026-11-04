@@ -937,6 +937,48 @@ The complete specification Definition of Done is **not yet satisfied**.
     pause, and its decisions took 17-30 s. Thinking, not doing, is now the slow
     part.
   * 279 tests; each build installed, smoke passed.
+* **2026-11-04 evening, where a decision's time goes; the routine lane.**
+  * **Measured.** Each thought's timings are now journaled (`sight.took`).
+    * A whole local decision took 16 s: reading ~8,900 tokens took 8.4 s, and
+      writing ~190 tokens at 24 a second took 8 s.
+    * The prompt is the shared system (5.1k tokens, of which DECIDE alone is
+      2.7k) plus her context (~3.8k compact): goals 837, memories 681, people
+      611, diary 586, unresolved 358, recently done 302, appearance 228, then
+      the screen's text.
+    * Claude, as the deep brain, decided in 6.6-8.6 s.
+  * **The server.** Ollama runs llama-server with `-b 512 -ub 512`.
+    * `num_batch` 1024 or 2048 changed nothing: 9,023 tokens took 16.3-16.5 s.
+    * It keeps 32 context checkpoints. A checkpoint near the system's end is
+      restored, but the rest is read at ~450-550 tokens a second, so only a
+      shorter prompt helps.
+  * **Unloading.** Unloading every 6 requests (to bound the ~300 MB-per-prompt
+    host cache) costs ~1.7 s a request on average; it is kept.
+  * **The routine lane** (`provider.continue_routine`). After her whole mind
+    chose a routine at the keyboard, its next inputs are planned from a short
+    prompt.
+    * The lane's prompt holds its own short instructions, the goal, her
+      intention, the last 6 diary lines, the screen's text and any recent
+      unresolved inputs. Answers are capped at a short scene and intention.
+    * It hands back ("rethink") for anything that needs her judgment.
+    * Her whole mind looks again at least every 6 lane plans or 3 minutes, and
+      at once when something wakes her, a message is unread, the reflex
+      stopped a plan, a step did not work, or the goal is a conversation.
+    * Plan steps need no "expected" text any more.
+  * **Live before the lane.** With the one-key hint, the small brain began to
+    plan walks: click, y, wait, y, wait, k, wait, k, 8 steps in 9 s.
+  * **The reflex's mistake.** It stopped a plan on a lone "kills0" from the
+    game's bar ("needs attention" 0.69). SOMIK then told Miha about an "odd
+    kills0 prompt". Lone words now go to the plain rule, and the diary says
+    "my reflex took … for …", a guess said as one.
+  * **SOMA World.** At 18:57:26 SOMIK switched to Discord for an unread
+    message. His game client sent its last heartbeat at 18:58:31, so the server
+    saved and removed his character; why the client went silent is not
+    established. The server has since been updated (24802636a6), so his
+    9f50a6140a client gets "Version mismatch".
+  * **Another unclean reset** at 19:37 (Kernel-Power 41, no bugcheck). SOMA
+    and Ollama came back by themselves.
+  * 283 tests; installed at 20:38, smoke passed. The lane itself has not yet
+    run live.
 
 ## Confirmed
 
