@@ -860,6 +860,33 @@ The complete specification Definition of Done is **not yet satisfied**.
   (43.3 MB) for the zip. The connection itself is not yet tested. Four more
   unclean resets overnight (20:22, 03:55, 04:25, 08:53), still without a
   bugcheck code. 266 tests; each build installed, smoke passed.
+* **2026-11-04, SOMIK in SOMA World.** Miha answered him in Discord.
+  * **SmartScreen.** At 12:43 SOMIK himself chose More info → Run anyway.
+  * **Stale game data windows.** The client then showed one "Stale game data"
+    debug window per cached file.
+    * Cause: the release zip carried `data\cache` from a MinGW build. That
+      build's file clock never matches the MSVC client's, so every entry was
+      stale. The «SOMIKs Open World» session found the clock cause. It replaced
+      the asset at the same URL with one without `data\cache`.
+    * SOMIK closed them one by one with space, mod after mod, for 20 minutes.
+  * **The note.** At the owner's request I put a note on his screen: a window
+    on top that took no focus, signed by me for Miha. It said the windows are a
+    release bug, told him to press I once, and gave the join steps.
+    * Its "about 3,300 windows" overstated it. In client mode only the
+      startup files (about 58) show a window; the rest are only logged.
+  * **Joining.** At 13:03 he pressed i, and the whole series ended. He went on
+    by himself: CO-OP, Join, soma.lokvetia.com:64870, a random character,
+    capital Y.
+  * **First connection.** At 13:20 his character stood in evac shelter A-23.
+    This is the first connection to the server from his PC.
+  * **The note removed.** He took the note for a Unigram window, so I closed
+    it.
+  * **Not yet checked:**
+    * The status bar says "Tyesha", while he made "Tonami Jorgensen".
+    * He has not played yet.
+    * Telegram is still logged out, so his wish to tell Miha could not go
+      there.
+  * No SOMA code changed.
 
 ## Confirmed
 
