@@ -66,6 +66,7 @@ def kernel(tmp_path):
     value._wait = lambda seconds: None
     value._rest = lambda frame, seconds: None
     value._settle = lambda before: make_frame("gray")  # inputs visibly change the screen
+    value._glance = lambda before: value._settle(before)  # a plan step's shorter look, the same in tests
     yield value
     value._executor.shutdown(wait=True)
     store.close()
@@ -561,6 +562,8 @@ def visibly_changing(kernel):
 
 
 def test_a_short_plan_runs_step_by_step_with_one_decision(kernel):
+    # Live, 2026-11-04: each key in the game cost SOMIK a decision and a checked outcome,
+    # 20-80 s a step. The keyboard steps of a plan are checked by pixels, not by a thought.
     visibly_changing(kernel)
     decisions = []
     kernel.provider.decide = lambda *args: decisions.append(1) or plan_decision(
@@ -570,19 +573,153 @@ def test_a_short_plan_runs_step_by_step_with_one_decision(kernel):
                                                                               "evidence": "Visible"}
     kernel.cycle()
     assert [a.kind for a in kernel.port.executed] == ["click", "type_text", "key"]
-    assert verified == ["click", "type_text", "key"]   # every non-reversible step verified
+    assert verified == ["click"]   # the click, grounded on the picture, keeps the brain's own check
     assert kernel.store.pending_actions() == [] and decisions == [1]  # three inputs, one decision
+    steps = [e["data"] for e in kernel.store.events(limit=50) if e["kind"] == "experience"]
+    assert [s["outcome"]["status"] for s in steps] == ["success"] * 3 and all(s.get("plan") for s in steps[1:])
+    assert "as I went on with my plan" in steps[2]["outcome"]["evidence"]
+    [plan] = [e["data"] for e in kernel.store.events(limit=50) if e["kind"] == "plan"]
+    assert (plan["done"], plan["planned"], plan["stopped"]) == (3, 3, "all steps done")
+    diary = [e["entry"] for e in kernel._context()["diary"]]
+    assert any("carried out 3 of the 3 steps" in entry and "all went as planned" in entry for entry in diary)
+    assert sum("I acted" in entry for entry in diary) == 1   # the steps after the first are one stretch
 
 
-def test_a_plan_stops_at_the_first_unconfirmed_step(kernel):
-    visibly_changing(kernel)
+def test_a_plan_stops_at_the_first_step_that_shows_nothing(kernel):
+    shades = iter([make_frame((90,) * 3), make_frame((90,) * 3)])
+    kernel._settle = lambda before: next(shades)   # the click shows; the typing changes nothing
     kernel.provider.decide = lambda *args: plan_decision(Action("type_text", {"text": "Привіт"}, "Draft"),
                                                          Action("key", {"key": "enter"}, "Sent"))
-    outcomes = iter([{"status": "success", "confidence": .95, "evidence": "Focused"},
-                     {"status": "failure", "confidence": .95, "evidence": "Text went elsewhere"}])
-    kernel.provider.verify = lambda *args: next(outcomes)
     kernel.cycle()
     assert [a.kind for a in kernel.port.executed] == ["click", "type_text"]  # Enter never pressed
+    [pending] = kernel.store.pending_actions()   # the typing is inspected again, never replayed
+    assert pending["action"]["kind"] == "type_text"
+    [plan] = [e["data"] for e in kernel.store.events(limit=50) if e["kind"] == "plan"]
+    assert plan["done"] == 2 and "No visible change" in plan["stopped"]
+
+
+class ScreensReader:
+    """Machine vision whose text changes with each new frame it reads."""
+    def __init__(self, *screens):
+        self.screens, self.seen = list(screens), {}
+    def read(self, frame):
+        if frame.frame_id not in self.seen:
+            self.seen[frame.frame_id] = self.screens.pop(0) if self.screens else self.seen.get("last", [])
+            self.seen["last"] = self.seen[frame.frame_id]
+        return [{"text": text, "score": .99, "box": (.1, .1 + .05 * i, .4, .13 + .05 * i)}
+                for i, text in enumerate(self.seen[frame.frame_id])]
+
+
+def walking(kernel, *keys):
+    step = lambda key: Action("key", {"key": key}, "I move one tile")
+    kernel.provider.decide = lambda *args: plan_decision(*map(step, keys[1:]), first=step(keys[0]))
+
+
+def test_a_planned_walk_goes_without_a_thought_and_stops_when_the_game_asks(kernel):
+    # In the game "y" walks north-west and also confirms a "(Y/n)" prompt: a question ends the plan.
+    visibly_changing(kernel)
+    # Screens: her look, the fresh one before acting, then after each step.
+    kernel.reader = ScreensReader(["Shelter"], ["Shelter"], ["Shelter", "You hear a thump."],
+                                   ["Shelter", "You hear a thump."],
+                                   ["Shelter", "You hear a thump.", "Really step into the pit? (Y/n)"])
+    verified = []
+    kernel.provider.verify = lambda *args: verified.append(1) or {"status": "success", "confidence": .95,
+                                                                  "evidence": "Visible"}
+    walking(kernel, "l", "l", "l", "y", "y")
+    kernel.cycle()
+    assert [a.args["key"] for a in kernel.port.executed] == ["l", "l", "l"]   # no "y" into the pit
+    assert not verified   # a planned walk spends no thought on each key
+    [plan] = [e["data"] for e in kernel.store.events(limit=80) if e["kind"] == "plan"]
+    assert plan["done"] == 3 and "(Y/n)" in plan["stopped"]
+
+
+def test_what_her_own_hand_typed_is_not_the_program_asking(kernel):
+    visibly_changing(kernel)
+    kernel.reader = ScreensReader(["Search"], ["Search"], ["Search"], ["Search", "what is IC 10?"],
+                                   ["Results for IC 10"])
+    kernel.provider.decide = lambda *args: plan_decision(Action("type_text", {"text": "what is IC 10?"}, "Typed"),
+                                                         Action("key", {"key": "enter"}, "Results"))
+    kernel.cycle()
+    assert [a.kind for a in kernel.port.executed] == ["click", "type_text", "key"]
+
+
+class FakeReflex:
+    def __init__(self, go_on=True, sure=None):
+        self.go_on, self.sure, self.judged, self.released, self.model = go_on, sure, [], 0, "laya:test"
+    def judge(self, step, expected, appeared):
+        self.judged.append((step, list(appeared)))
+        return {"go_on": self.go_on, "why": "" if self.go_on else f'new text needs a look: "{appeared[-1]}"',
+                "by": "laya"}
+    def outcome(self, step, expected, appeared, vanished=()):
+        return None if self.sure is None else {"status": "success", "confidence": self.sure,
+                                               "evidence": "The text on the screen shows it, read by my reflex."}
+    def release(self):
+        self.released += 1
+
+
+def test_the_reflex_judges_what_came_up_between_plan_steps(kernel):
+    visibly_changing(kernel)
+    kernel.reader = ScreensReader(["Shelter"], ["Shelter"], ["Shelter"], ["Shelter", "Spotted zombie!"])
+    kernel.reflex = FakeReflex(go_on=False)
+    walking(kernel, "l", "l", "l")
+    kernel.cycle()
+    assert len(kernel.port.executed) == 2   # the zombie ended the walk after the second step
+    assert kernel.reflex.judged[-1] == ("key l", ["Spotted zombie!"])
+    [plan] = [e["data"] for e in kernel.store.events(limit=50) if e["kind"] == "plan"]
+    assert "Spotted zombie!" in plan["stopped"]
+
+
+def test_a_sure_reflex_confirms_a_typed_outcome_and_a_doubt_goes_to_the_brain(kernel):
+    visibly_changing(kernel)
+    kernel.reader = ScreensReader(["New Tab"], ["New Tab"], ["HappyMiha/soma-world", "README.md"])
+    kernel.reflex = FakeReflex(sure=.97)
+    verified = []
+    kernel.provider.verify = lambda *args: verified.append(1) or {"status": "success", "confidence": .95,
+                                                                  "evidence": "Visible"}
+    enter = Action("key", {"key": "enter"}, "The repository page opens")
+    kernel.provider.decide = lambda *args: plan_decision(first=enter)
+    kernel.cycle()
+    assert not verified   # System 1 was sure: no thought spent
+    outcome = [e["data"]["outcome"] for e in kernel.store.events(limit=50) if e["kind"] == "experience"][-1]
+    assert outcome["status"] == "success" and "reflex" in outcome["evidence"]
+    kernel.reflex.sure = None   # unsure: the brain checks, as before
+    kernel.reader = ScreensReader(["A"], ["B"])
+    kernel.cycle()
+    assert verified == [1]
+
+
+def test_thinking_about_every_single_key_is_pointed_out(kernel):
+    # Live, right after the executor came: the small brain still chose one key per thought.
+    seen = []
+    def one_key(frame, context, *args):
+        seen.append(context.get("one_key_at_a_time"))
+        return plan_decision(first=Action("key", {"key": "k"}, "I move one tile north"))
+    kernel.provider.decide = one_key
+    for _ in range(4):
+        kernel.cycle()
+    assert seen[:3] == [None, None, None] and "each pressed one key" in seen[3]
+    kernel.provider.decide = lambda frame, context, *args: seen.append(context.get("one_key_at_a_time")) or \
+        plan_decision(Action("wait", {"seconds": 2}, ""), first=Action("key", {"key": "k"}, "North"))
+    kernel.cycle()
+    kernel.cycle()
+    assert "each pressed one key" in seen[-1]   # a pause after the key is still one key per thought
+    walking(kernel, "k", "k", "k")   # a plan clears it
+    kernel.cycle()
+    kernel.provider.decide = one_key
+    kernel.cycle()
+    assert seen[-1] is None
+
+
+def test_the_reflex_gives_the_card_to_the_painter(kernel):
+    kernel.reflex = FakeReflex()
+    kernel.imaging = type("Painter", (), {"available": True, "last_seconds": 1.0,
+                                         "generate": lambda self, *args: b"picture"})()
+    kernel.appearance = type("Look", (), {"wants_selfie": lambda self: True, "current": lambda self: {},
+                                          "painting_prompt": lambda self, scene: scene,
+                                          "record_selfie": lambda self, picture, prompt: None})()
+    kernel.provider.selfie_prompt = lambda look: "a figure"
+    kernel.provider.release_local = lambda: None
+    assert kernel._take_selfie() and kernel.reflex.released == 1
 
 
 def test_a_plan_stops_when_teaching_begins(kernel):

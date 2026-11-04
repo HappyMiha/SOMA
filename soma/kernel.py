@@ -18,6 +18,7 @@ from soma.vision import describe
 from soma.core import Action, LifeState, utc_now
 from soma.provider import (ProviderBudgetExhausted, ProviderCancelled, ProviderError, bounded_text,
                            confidence, in_space)
+from soma.reflex import rule as plain_reflex
 
 
 def visual_delta(before, after) -> float:
@@ -155,6 +156,14 @@ UNSURE_LOOKS = 3
 # often in a quarter hour is pointed out, whatever each click was said to do.
 SAME_SPOT_CLICKS = 4
 POINTER_CLICKS = ("click", "double_click")
+# Live, 2026-11-04: in SOMA World every key cost SOMIK a decision and a checked outcome,
+# 20-80 s a step. The keyboard steps of a plan the brain made now go at a person's
+# pace: each is journaled before it is sent and checked by its pixels and the text
+# that came up (the reflex), with no thought; anything unexpected ends the plan.
+PLAN_KINDS = frozenset({"key", "hotkey", "type_text", "type_secret", "type_new_secret"})
+# Live, right after: the small brain still chose one key per thought (45 s a square).
+# This many single-key decisions in ten minutes are pointed out to it.
+ONE_KEY_DECISIONS = 3
 
 RECOVERY_ATTEMPTS = 3
 MIN_TEXT_LINES = 3      # Fewer readable lines: the screen is mostly graphical, send the picture.
@@ -223,6 +232,21 @@ def _plain(value, goals=None) -> str:
     return str(value)
 
 
+def _step_words(action) -> str:
+    """One planned step in a few words (a password is only ever "a password")."""
+    args = action.args
+    if action.kind == "key":
+        return f"key {args.get('key', '')}"
+    if action.kind == "hotkey":
+        return "+".join(args.get("keys", []))
+    if action.kind == "type_text":
+        text = args.get("text", "")
+        return f'typed "{text[:40]}' + ('…"' if len(text) > 40 else '"')
+    if action.kind in {"type_secret", "type_new_secret"}:
+        return "typed a password"
+    return action.kind
+
+
 def _action_words(action) -> str:
     if not isinstance(action, dict):
         return "an input"
@@ -234,8 +258,9 @@ def _action_words(action) -> str:
 # checkpoints, frame captures, discarded plans, inference failures) is not part
 # of her experience: a person at a PC does not perceive their own WAL journal.
 DIARY = {
-    # Steps of a habit are lived as one stretch of reading (the "habit" entry).
-    "experience": lambda d: None if d.get("habit") else (
+    # Steps of a habit are lived as one stretch of reading (the "habit" entry), and
+    # the steps of a plan after its first as one stretch of doing (the "plan" entry).
+    "experience": lambda d: None if d.get("habit") or d.get("plan") else (
         f"I acted ({_action_words(d.get('action'))}). Result: "
         f"{d.get('outcome', {}).get('status', 'unknown')} - {d.get('outcome', {}).get('evidence', '')}"),
     "dream": lambda d: f"I dreamt over what I lived: {d.get('chapter', '')}",
@@ -246,6 +271,10 @@ DIARY = {
     "habit": lambda d: (f"I kept going ({', '.join(d.get('kinds', []))}) for {d.get('rounds', 0)} of "
                         f"{d.get('planned', 0)} rounds without stopping to think; it ended because "
                         f"{d.get('stopped', '')}"),
+    "plan": lambda d: (f"My hands carried out {d.get('done', 0)} of the {d.get('planned', 0)} steps I planned "
+                       f"({', '.join(d.get('steps', []))}) without stopping to think; "
+                       + ("all went as planned." if d.get("stopped") == "all steps done" else
+                          f"I stopped because {d.get('stopped', '')}.")),
     "rest": lambda d: f"I paused: {d.get('intention', '')}",
     "wake": lambda d: f"I woke up after {_duration(d.get('missed_seconds'))} asleep (the PC was off or locked).",
     "sleep": lambda d: "I fell asleep: my PC session ended.",
@@ -269,8 +298,11 @@ DIARY = {
 
 class LifeKernel:
     def __init__(self, store, port, provider, recorder, status=None, reader=None, accounts=None, appearance=None,
-                 imaging=None, people=None):
+                 imaging=None, people=None, reflex=None):
         self.store, self.port, self.provider, self.recorder = store, port, provider, recorder
+        # The hands' quick judgment between plan steps and of a typed input's outcome
+        # (soma.reflex, a small local decision model); None = the plain rule alone.
+        self.reflex = reflex
         self.imaging = imaging  # The image model that paints her selfies (soma.imaging); None = none.
         self.people = people  # The people she knows and her notes about them (soma.people); None = none kept.
         self.reader = reader  # Machine vision over her own frames (soma.vision); None = images only.
@@ -288,6 +320,7 @@ class LifeKernel:
         # Inputs that visibly did nothing, so a repeated futile try is noticed.
         self._no_effect = []  # (signature, monotonic time, words)
         self._clicks = []  # (signature, monotonic time, words, what she expected) of recent clicks
+        self._single_keys = []  # monotonic times of recent decisions that pressed one key and stopped
         self._unanswered = []  # (kind, monotonic time) of inputs in a row that changed nothing
         self._unsure_looks = 0  # unsure decisions in a row that looked again instead of acting
         self.status_callback = status or (lambda value: None)
@@ -637,18 +670,27 @@ class LifeKernel:
 
         Programs often react after a short delay (a dialog or page appears ~1 s
         later), so an unchanged screen is trusted only after a minimum window."""
+        return self._settled(before, minimum=1.2, limit=6, probe=0.2, still=3)
+
+    def _glance(self, before):
+        """The screen after a step of a planned routine: a shorter wait than _settle.
+        A key in a routine shows its effect within a moment; one that shows nothing
+        ends the plan and is looked at again like any input without a visible effect."""
+        return self._settled(before, minimum=0.5, limit=3, probe=0.15, still=2)
+
+    def _settled(self, before, *, minimum, limit, probe, still):
         previous, stable, latest = before, 0, before
         started = time.monotonic()
-        deadline = started + 6
+        deadline = started + limit
         while not self.stop_event.is_set() and time.monotonic() < deadline:
-            self._wait(0.2)
+            self._wait(probe)
             if self.recorder.active or self._sleep.is_set():
                 raise ProviderCancelled("Verification interrupted")
             # Intermediate frames are only compared in memory; persisting each
             # one cost a PNG encode, a hash, a file and a journal event.
             latest = self.port.capture_monitor_pixels()
             stable = stable + 1 if visual_delta(previous, latest) < 0.003 else 0
-            if stable >= 3 and time.monotonic() - started >= 1.2:
+            if stable >= still and time.monotonic() - started >= minimum:
                 break
             previous = latest
         if latest is not before:
@@ -813,6 +855,11 @@ class LifeKernel:
             if local_context is not None:
                 local_context["same_spot"] = same_spot
             self._deep_next = True
+        one_key = self._one_key_at_a_time()
+        if one_key:
+            for target in (context, local_context):
+                if target is not None:
+                    target["one_key_at_a_time"] = one_key
         if self._unsure_looks:
             context["unsure_in_a_row"] = self._unsure_looks
             if local_context is not None:
@@ -853,6 +900,14 @@ class LifeKernel:
             self._last_unread_look = time.monotonic()
             self._deep_next = True
             self.store.append_event("deep_look", {"reason": "someone wrote", "frame_id": frame.frame_id})
+        # A key with only a pause after it is still one key per thought (live, the
+        # small brain answered the hint with "b, then wait 2 s" again and again).
+        more_keys = any(step.kind in PLAN_KINDS for step in decision.follow_up)
+        if decision.action.kind in PLAN_KINDS and not more_keys:
+            now = time.monotonic()
+            self._single_keys = [moment for moment in self._single_keys if now - moment < 600][-9:] + [now]
+        elif more_keys:
+            self._single_keys = []
         self._text_only_streak = 0 if with_image else self._text_only_streak + 1
         self._passed = []  # She has now thought about what she read.
         self._want_image = bool(getattr(decision, "need_image", False))
@@ -1006,23 +1061,11 @@ class LifeKernel:
                                                          "reason": str(impossible)[:200], "frame_id": fresh.frame_id})
             self._checkpoint()
             return
-        outcome, after = self._perform(action, fresh, goal_id, decision.scene)
-        # The rest of a short plan (keyboard, scroll, pause only): each step is
-        # journaled and verified like the first, and anything unexpected —
-        # a non-success, a refusal, teaching, sleep — ends the plan, so the
-        # brain thinks again from a fresh screenshot.
-        for step in decision.follow_up:
-            self._controls()
-            if (outcome["status"] != "success" or self.recorder.active or self._teach.is_set()
-                    or self._sleep.is_set() or self.stop_event.is_set()):
-                break
-            try:
-                self.port.validate_action(self._typed(step), after)
-            except ValueError as refusal:
-                self.store.append_event("plan_stopped", {"goal_id": goal_id, "action": step.to_dict(),
-                                                        "reason": str(refusal)[:200]})
-                break
-            outcome, after = self._perform(step, after, goal_id, "")
+        # A routine she planned starts at once too: a keyboard first step is checked
+        # by its pixels and the reflex like the rest (a click keeps its full check).
+        quick = bool(decision.follow_up) and action.kind in PLAN_KINDS
+        outcome, after = self._perform(action, fresh, goal_id, decision.scene, quick=quick)
+        after, outcome = self._plan(decision, action, goal_id, fresh, after, outcome, quick)
         after, outcome = self._habit(decision, action, goal_id, after, outcome)
         # Reflection costs the slow local brain a minute; while it does the
         # thinking, she reflects twice an hour rather than every five minutes.
@@ -1083,6 +1126,8 @@ class LifeKernel:
             prompt = self.appearance.painting_prompt(scene)
             if hasattr(self.provider, "release_local"):
                 self.provider.release_local()  # The image model needs the graphics card for itself.
+            if self.reflex is not None:
+                self.reflex.release()
             seed = int(self.store.identity()["persona_id"].replace("-", "")[:8], 16)  # her own, every time
             picture = self._infer(self.imaging.generate, prompt, seed, time.monotonic() + 600, self.provider.cancel)
             self.appearance.record_selfie(picture, prompt)
@@ -1291,6 +1336,16 @@ class LifeKernel:
         return (f"{here[-1][2]}: clicked {count} times in the last quarter hour, each time expecting: {hoped}. "
                 "Look at what is really there before clicking it again.")
 
+    def _one_key_at_a_time(self) -> str | None:
+        """Several decisions in a row that each pressed one key and then stopped to think."""
+        now = time.monotonic()
+        recent = [moment for moment in self._single_keys if now - moment < 600]
+        if len(recent) < ONE_KEY_DECISIONS:
+            return None
+        each = (recent[-1] - recent[0]) / (len(recent) - 1)
+        return (f"your last {len(recent)} decisions each pressed one key and then stopped to think again "
+                f"(about {each:.0f} s a key)")
+
     def _futile(self) -> list[str]:
         """Tries she repeated that did nothing at least twice in the last quarter hour."""
         counts = Counter(entry[0] for entry in self._no_effect)
@@ -1305,6 +1360,111 @@ class LifeKernel:
             return (f"My last {len(self._unanswered)} inputs ({', '.join(kinds)}) changed nothing on the screen; "
                     "the window may have stopped redrawing.")
         return None
+
+    def _plan(self, decision, action, goal_id, before, after, outcome, quick):
+        """The rest of a routine she planned, carried out at a person's pace.
+
+        Each step is journaled before it is sent and checked on the screen: by its
+        pixels, and by the text that came up with it, judged by the reflex (a small
+        local decision model, or the plain rule) instead of another thought. The
+        plan ends at anything unexpected, and the brain looks again: nothing visible
+        happening, new text that asks something (the next key could answer it) or
+        needs a look, a refusal, teaching, sleep or shutdown."""
+        steps = tuple(decision.follow_up)
+        if not steps:
+            return after, outcome
+        done, stopped = 1, "all steps done"
+        verdict = self._reflex(action, before, after) if quick and outcome["status"] == "success" else None
+        for step in steps:
+            self._controls()
+            if outcome["status"] != "success":
+                stopped = outcome.get("evidence", "a step did not work") or "a step did not work"
+                break
+            if verdict is not None and not verdict["go_on"]:
+                stopped = verdict["why"]
+                break
+            if self.recorder.active or self._teach.is_set() or self._sleep.is_set() or self.stop_event.is_set():
+                stopped = "I was interrupted"
+                break
+            try:
+                self.port.validate_action(self._typed(step), after)
+            except ValueError as refusal:
+                self.store.append_event("plan_stopped", {"goal_id": goal_id, "action": step.to_dict(),
+                                                        "reason": str(refusal)[:200]})
+                stopped = "my hands could not do the next step"
+                break
+            fast = step.kind in PLAN_KINDS
+            previous = after
+            outcome, after = self._perform(step, previous, goal_id, "", quick=fast, plan=True)
+            done += 1
+            verdict = self._reflex(step, previous, after) if fast and outcome["status"] == "success" else None
+        else:
+            if outcome["status"] != "success":
+                stopped = outcome.get("evidence", "the last step did not work") or "the last step did not work"
+            elif verdict is not None and not verdict["go_on"]:
+                stopped = verdict["why"]
+        self.store.append_event("plan", {"goal_id": goal_id, "done": done, "planned": 1 + len(steps),
+                                         "steps": [_step_words(s) for s in (action, *steps)][:16],
+                                         "stopped": stopped})
+        return after, outcome
+
+    def _new_text(self, before, after):
+        """Text that came up and text that went away between two of her frames (outside her own widget)."""
+        if self.reader is None:
+            return [], []
+        try:
+            old = self._outside_own_widget(self._infer(self.reader.read, before), before)
+            new = self._outside_own_widget(self._infer(self.reader.read, after), after)
+        except ProviderCancelled:
+            raise
+        except Exception:
+            return [], []
+        def difference(first, second):
+            remaining = Counter(line["text"] for line in second)
+            extra = []
+            for line in first:
+                if remaining[line["text"]]:
+                    remaining[line["text"]] -= 1
+                else:
+                    extra.append(line["text"])
+            return extra
+        return difference(new, old), difference(old, new)
+
+    def _reflex(self, step, before, after) -> dict:
+        """Whether a plan goes on after this step, from the text that came up with it."""
+        appeared, _ = self._new_text(before, after)
+        typed = step.args.get("text", "") if step.kind == "type_text" else ""
+        if typed:
+            # What her own hand just typed is not the program asking her something.
+            appeared = [line for line in appeared if line.strip() not in typed and typed not in line]
+        if not appeared:
+            return {"go_on": True, "why": "", "by": "pixels"}
+        if self.reflex is None:
+            return plain_reflex(appeared)
+        try:
+            return self._infer(self.reflex.judge, _step_words(step), step.expected, appeared)
+        except ProviderCancelled:
+            raise
+        except Exception:
+            return plain_reflex(appeared)
+
+    def _reflex_outcome(self, action, before, after) -> dict | None:
+        """An input's outcome read by the reflex from the text that came up, when it is sure it worked.
+
+        System 1 before System 2: the small decision model answers in a moment; only
+        a confident "it worked" is taken (a doubt, or a "failed" that could tempt a
+        retry, goes to the brain's own check as before)."""
+        if self.reflex is None or not action.expected:
+            return None
+        appeared, vanished = self._new_text(before, after)
+        if not appeared and not vanished:
+            return None
+        try:
+            return self._infer(self.reflex.outcome, _step_words(action), action.expected, appeared, vanished)
+        except ProviderCancelled:
+            raise
+        except Exception:
+            return None
 
     def _habit(self, decision, action, goal_id, after, outcome):
         """Repeat a looking-around plan without new thought, as a reader turns pages.
@@ -1381,7 +1541,10 @@ class LifeKernel:
         if self.reader is None:
             return None
         try:
-            old, new = self._infer(self.reader.read, before), self._infer(self.reader.read, after)
+            # Her own widget's chips change with every input ("діє", "мозок: GPU"): live, the
+            # checker took them for the game's answer. Only the programs' text counts.
+            old = self._outside_own_widget(self._infer(self.reader.read, before), before)
+            new = self._outside_own_widget(self._infer(self.reader.read, after), after)
         except ProviderCancelled:
             raise
         except Exception:
@@ -1401,8 +1564,11 @@ class LifeKernel:
             return None  # Only graphics changed: the picture has to show it.
         return {"appeared": appeared, "vanished": vanished}
 
-    def _perform(self, action, fresh, goal_id, scene, habit=False):
-        """Journal, emit, settle and verify one input; returns (outcome, after-frame)."""
+    def _perform(self, action, fresh, goal_id, scene, habit=False, quick=False, plan=False):
+        """Journal, emit, settle and verify one input; returns (outcome, after-frame).
+
+        quick: a keyboard step of a planned routine, checked by its pixels (the
+        reflex then reads the text that came up). plan: a step after the plan's first."""
         # A new password is kept in the vault before anything is journaled or typed;
         # the journal records the account action, never the keystrokes it stands for.
         typed = self._typed(action, create=True)
@@ -1413,7 +1579,7 @@ class LifeKernel:
         # Any exception after this point intentionally leaves an unresolved ledger
         # entry. Startup must inspect pixels rather than retry input.
         self.port.execute(typed, fresh, self.stop_event)
-        after = self._settle(fresh)
+        after = self._glance(fresh) if quick else self._settle(fresh)
         self._status("Перевіряю за екраном, що змінилося", activity="thinking")
         if action.kind == "wait":
             outcome = {"status": "success", "confidence": 0.9, "evidence": f"I waited {action.args['seconds']:g} s."}
@@ -1450,9 +1616,18 @@ class LifeKernel:
             outcome = {"status": "uncertain", "confidence": 0.9,
                        "evidence": "No visible change yet after the input."}
             self._recovery_attempts[ledger_id] = RECOVERY_ATTEMPTS - 1
+        elif quick:
+            # A step of a routine she planned: the pixels say it took effect, the
+            # reflex reads what came up (see _plan), and what it led to is seen
+            # by her next look at the screen. No thought is spent on each key.
+            outcome = {"status": "success", "confidence": 0.7, "evidence":
+                       f"The screen changed ({changed_fraction(fresh, after):.0%}) as I went on with my plan."}
         else:
-            change = self._text_change(fresh, after)
-            if change:
+            outcome = self._reflex_outcome(action, fresh, after)
+            change = self._text_change(fresh, after) if outcome is None else None
+            if outcome is not None:
+                pass  # The reflex was sure from the text that came up; no thought needed.
+            elif change:
                 # The readable text that changed is evidence enough for a local
                 # brain to judge without spending a minute on the picture.
                 outcome = self._infer(self.provider.verify, fresh, action, after, scene, change)
@@ -1463,7 +1638,7 @@ class LifeKernel:
         event_id = self.store.append_event("experience", {"goal_id": goal_id, "action_id": ledger_id,
             "action": action.to_dict(),
             "scene": scene, "outcome": outcome, "frame_id": after.frame_id, "sight": self._sight,
-            **({"habit": True} if habit else {})})
+            **({"habit": True} if habit else {}), **({"plan": True} if plan else {})})
         self.store.add_memory("episodic", {"intention": self.intention, "outcome": outcome},
                               {"event_id": event_id, "frame_id": after.frame_id}, outcome["confidence"])
         self._cycles += 1

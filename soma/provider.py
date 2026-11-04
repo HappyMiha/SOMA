@@ -22,6 +22,7 @@ from soma.config import ModelConfig
 from soma.core import ACTION_FIELDS, OPTIONAL_FIELDS, Action, ScreenFrame
 from soma.people import TRUST
 from soma.people import clean_update as clean_person
+from soma.reflex import is_reflex_model
 
 
 SOMA_SELF = """You are {name}: one continuous personality with a life of your own. You live
@@ -124,7 +125,7 @@ JSON schema: {{"scene":str,"intention":str,"goal":{{"id":optional existing goal 
 (to continue a listed goal give its id, origin and priority; its motive, description and
 expected_outcome then stay as they are unless you write new ones; a new goal needs all three)
 "action":{{"kind":str,"args":object,"expected":str}},
-"then":[optional up to 4 further actions of kind key|hotkey|type_text|scroll|wait],
+"then":[optional up to 12 further actions of kind key|hotkey|type_text|scroll|wait],
 "repeat":optional {{"times":1..8,"pause":seconds 0..60}},"need_image":optional bool,
 "goal_updates":[{{"id":existing goal id,"status":"completed|deferred|abandoned",
 "evidence":visible evidence str,"confidence":0..1}}],
@@ -161,13 +162,20 @@ same_spot, when present, says you have clicked one spot again and again lately w
 expecting something different each time. What is really there may not be what you
 thought: read that spot on the screen, and if it does not take you further, do
 something else (another control, another window) or ask someone.
+one_key_at_a_time, when present, says you have been thinking about every single key.
+When you can foresee the next keys (walking on across a room, the next menu choices),
+put them in "then": your hands carry them out at once and stop by themselves if
+anything comes up, and you think again only then.
 unsure_in_a_row, when present, counts your last looks that ended too unsure to act.
 After a few, another look will not make the screen clearer: act on your best guess,
 an input that is easy to undo first, or rest.
-Use "then" for a routine sequence you would do without stopping to think, such as
-paging through an article, or typing into the field you click and pressing Enter.
-Each step is checked on screen before the next; anything unexpected stops the rest
-and you look again. Clicks never go in "then": they need a fresh look.
+Use "then" for a routine you would carry out without stopping to think, up to 12
+steps: walking several squares in a game, paging through an article, typing into the
+field you click and pressing Enter. Your hands then go at a person's pace, about a
+second a step, each step checked on the screen by its pixels and by the text that
+comes up; nothing visible happening, or new text that asks something or needs a look,
+stops the rest, and you look again. Plan as far as you can foresee: thinking about
+every single key makes you very slow. Clicks never go in "then": they need a fresh look.
 "repeat" keeps a routine of looking around going without stopping to think, as a
 reader turns pages: the whole plan (only scroll, move, wait or page keys) runs again
 up to "times" more, with "pause" seconds between rounds to read. It stops by itself
@@ -326,7 +334,7 @@ PEOPLE_UPDATES = {"type": "array", "maxItems": 3, "items": _object({
 # Steps after the first need no fresh visual grounding of a target point.
 FOLLOW_UP_KINDS = {"key", "hotkey", "type_text", "type_secret", "type_new_secret", "scroll", "wait"}
 ACCOUNT_STATUSES = ["signing up", "active", "needs verification", "locked", "abandoned"]
-MAX_FOLLOW_UP = 4
+MAX_FOLLOW_UP = 12     # The hands carry a plan out step by step, each checked by pixels and the reflex.
 MAX_REPEAT = 8          # Rounds of a looking-around habit before she thinks again.
 SELF_EVIDENT = {"scroll", "move", "wait"}  # Verified from pixels; expected text optional.
 
@@ -703,7 +711,9 @@ class ModelProvider:
             return {"reachable": False, "loaded": False, "size": 0, "vram": 0, "others": []}
         names = {config.local_model, config.local_model if ":" in config.local_model else config.local_model + ":latest"}
         mine = [m for m in models if isinstance(m, dict) and (m.get("name") in names or m.get("model") in names)]
-        others = [str(m.get("name", "")) for m in models if isinstance(m, dict) and m not in mine]
+        # SOMA's own reflex model (soma.reflex) sits beside the brain; it is not someone else's program.
+        others = [str(m.get("name", "")) for m in models if isinstance(m, dict) and m not in mine
+                  and not is_reflex_model(m.get("name", ""), config.reflex_model)]
         return {"reachable": True, "loaded": bool(mine), "others": others,
                 "size": sum(int(m.get("size", 0) or 0) for m in mine),
                 "vram": sum(int(m.get("size_vram", 0) or 0) for m in mine)}

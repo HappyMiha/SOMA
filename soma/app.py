@@ -964,9 +964,14 @@ class LifeWidget(QWidget):
             self.appearance = Appearance(self.store)
             self.show_look()
             provider.scrub = self.accounts.scrub  # No brain ever receives one of her passwords.
+            from soma.provider import ollama_root
+            from soma.reflex import Reflex
+            # The hands' reflex lives in the same local Ollama as the brain (when there is one).
+            reflex = (Reflex(ollama_root(config.local_endpoint), config.reflex_model)
+                      if config.mode in {"local", "hybrid"} and config.local_api != "openai" else None)
             self.kernel = LifeKernel(self.store, port, provider, recorder, self.signals.status.emit,
                                      reader=ScreenReader(), accounts=self.accounts, appearance=self.appearance,
-                                     imaging=Imaging(), people=self.people)
+                                     imaging=Imaging(), people=self.people, reflex=reflex)
             self.kernel.make_way = self.signals.make_way.emit  # the widget steps aside from her hand
             from soma.brain_host import OllamaHost
             from soma.health import Health

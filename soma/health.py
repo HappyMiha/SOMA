@@ -164,8 +164,20 @@ class Health:
 
     # ── saying it ─────────────────────────────────────────────────────────
     def parts(self) -> list[Part]:
-        found = [self._local(), *self._remote_brains(), self._painter(), self._body()]
+        found = [self._local(), *self._remote_brains(), self._painter(), self._reflex(), self._body()]
         return [part for part in found if part is not None]
+
+    def _reflex(self) -> Part | None:
+        """The hands' quick judgment between plan steps (soma.reflex)."""
+        reflex = getattr(self.kernel, "reflex", None)
+        if reflex is None:
+            return None
+        model = getattr(reflex, "_model", None)  # what it found; looking is the reflex's own business
+        if model:
+            return Part("reflex", "Рефлекс рук", "ok", "рефлекс: Laya",
+                        f"Між кроками плану й після набраного тексту швидко судить {model} (локально, ~0,1 с).")
+        return Part("reflex", "Рефлекс рук", "idle", "рефлекс: правило",
+                    "Моделі Laya в Ollama не знайдено: між кроками плану судить просте правило.")
 
     def _routes(self) -> dict:
         return self.provider.metrics.get("routes", {})

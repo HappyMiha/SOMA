@@ -643,7 +643,9 @@ def test_decision_may_carry_a_short_plan_of_keyboard_steps():
     value["then"] = [{"kind": "click", "args": {"x": .5, "y": .5}, "expected": "Something"}]
     with pytest.raises(ProviderError):
         provider.decide(frame(), {})  # clicks need a fresh look: never in a plan tail
-    value["then"] = [{"kind": "key", "args": {"key": "PgDn"}, "expected": "Next page"}] * 5
+    value["then"] = [{"kind": "key", "args": {"key": "l"}, "expected": "One tile east"}] * 12
+    assert len(provider.decide(frame(), {}).follow_up) == 12   # a walk of a dozen squares is one plan
+    value["then"] = [{"kind": "key", "args": {"key": "PgDn"}, "expected": "Next page"}] * 13
     with pytest.raises(ProviderError):
         provider.decide(frame(), {})
     provider.close()
@@ -654,4 +656,4 @@ def test_plan_tail_schema_allows_only_keyboard_scroll_and_wait():
     tail = decide_schema("per_mille")["properties"]["then"]
     kinds = {branch["properties"]["kind"]["enum"][0] for branch in tail["items"]["anyOf"]}
     assert kinds == {"key", "hotkey", "type_text", "type_secret", "type_new_secret", "scroll", "wait"}
-    assert tail["maxItems"] == 4
+    assert tail["maxItems"] == 12

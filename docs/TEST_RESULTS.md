@@ -887,6 +887,56 @@ The complete specification Definition of Done is **not yet satisfied**.
     * Telegram is still logged out, so his wish to tell Miha could not go
       there.
   * No SOMA code changed.
+* **2026-11-04, hands that carry out a plan; Laya as their reflex.** The owner
+  found SOMIK very slow in the game. Measured from his journal, one key cost
+  20-80 s:
+  * a decision by the GPU brain for every key (10-12 s);
+  * a check of each outcome by a model (7-23 s);
+  * after a key that showed nothing, three more looks.
+  * **Plan steps.** The keyboard steps of a plan (`then`, now up to 12) go at a
+    person's pace. Each is journaled before it is sent and settles in a shorter
+    look (0.5-3 s). It is checked by its pixels and by the text that came up
+    (outside SOMA's own widget), with no thought.
+  * **What stops a plan.** No visible change, new text that asks something or
+    needs a look, a refusal, teaching, sleep or shutdown all end the plan. A
+    step that showed nothing is inspected like any other and never replayed.
+  * **The reflex.** The text that came up is judged by a reflex
+    (`soma/reflex.py`). It uses Laya (Convai Innovations) in the same Ollama at
+    `/v1/systemone` when pulled, otherwise a plain rule. A "(Y/n)" prompt, "are
+    you sure" and a dialog's lone buttons stop a plan by rule first.
+  * **Single inputs.** The reflex's confident "it worked" (≥ 0.9) on the text
+    that came up replaces the model's check. A doubt still goes to the brain.
+    A "failed" is never taken from it, because it could tempt a retry.
+  * **Hint.** Three single-key decisions in ten minutes are pointed out to the
+    brain (`one_key_at_a_time`). A key followed only by a pause counts as one
+    key.
+  * **Widget.** It shows «рефлекс: Laya / правило».
+  * **A fix in passing.** The outcome check no longer reads SOMA's own widget
+    chips («діє», «мозок: GPU») as the program's answer.
+  * **Laya measured on SOMIK's PC.**
+    * The owner asked for it; pulled `laya` 844 MB and
+      `laya:322m-multilingual-bf16` 658 MB.
+    * Each judgment took 50-140 ms on the card once loaded and 9-26 s to load.
+    * The multilingual model answered well on:
+      * German and Ukrainian dialogs (asks 0.88 / 0.98);
+      * a zombie coming into view (attention 0.75);
+      * an ordinary log line and a loaded page (≤ 0.08);
+      * inputs that visibly worked (0.94 / 0.98).
+    * It missed "(Y/n)" (0.20), which the rule catches first.
+    * It could not tell a person's message from routine text: Miha's message in
+      Ukrainian came out as "routine" 0.99, and a clock as "person" 0.85.
+      Routing what woke him therefore stays with the brains; that use was tried
+      and dropped.
+    * On the card, its server reserved 16 slots of 8K context (2.7 GiB) and
+      evicted SOMIK's brain. Request options are ignored.
+    * A local variant `laya-soma:cpu` (`num_gpu 0`, `num_ctx 1024`, made from
+      the pulled model) runs on the processor in 250-350 ms with 0 VRAM. It is
+      preferred, and qwen stays on the card.
+  * **Live in the game (17:51-18:09 local).** Planned keys took about 1 s each
+    instead of 20-80 s. The small brain still planned mostly one key plus a
+    pause, and its decisions took 17-30 s. Thinking, not doing, is now the slow
+    part.
+  * 279 tests; each build installed, smoke passed.
 
 ## Confirmed
 

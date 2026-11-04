@@ -49,6 +49,9 @@ class ModelConfig:
     # prompt cache (0 = never). A CPU model with a large KV cache needs ~4; a
     # small-KV model on a GPU loses only its cache by unloading.
     local_unload_every: int = 4
+    # The hands' reflex (soma.reflex): a small decision model in the same local
+    # Ollama. Empty = whichever "laya" model has been pulled there, if any.
+    reflex_model: str = ""
 
     def validate(self):
         if self.mode not in {"remote", "local", "hybrid"}:
@@ -63,6 +66,8 @@ class ModelConfig:
             raise ValueError("Routine on the local brain needs hybrid mode")
         if type(self.local_unload_every) is not int or not 0 <= self.local_unload_every <= 1000:
             raise ValueError("Invalid local unload interval")
+        if not isinstance(self.reflex_model, str) or len(self.reflex_model) > 200:
+            raise ValueError("Invalid reflex model name")
         if self.coordinate_space not in {"normalized", "per_mille"}:
             raise ValueError("Unknown coordinate space")
         if not 2048 <= self.local_context_tokens <= 32768:
