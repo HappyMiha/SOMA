@@ -149,6 +149,12 @@ UNANSWERED_INPUTS = 4
 # minutes and every time looked again instead of trying F5 or Alt+Tab. After
 # this many unsure looks in a row, another look will not make it clearer.
 UNSURE_LOOKS = 3
+# Live, 2026-11-04: the routine brain clicked one spot of the screen 13 times in an
+# hour, each time expecting something else (a Star button, a download, an
+# extraction), and its checker called some of them successes. A spot clicked this
+# often in a quarter hour is pointed out, whatever each click was said to do.
+SAME_SPOT_CLICKS = 4
+POINTER_CLICKS = ("click", "double_click")
 
 RECOVERY_ATTEMPTS = 3
 MIN_TEXT_LINES = 3      # Fewer readable lines: the screen is mostly graphical, send the picture.
@@ -281,6 +287,7 @@ class LifeKernel:
         self._deep_next = True
         # Inputs that visibly did nothing, so a repeated futile try is noticed.
         self._no_effect = []  # (signature, monotonic time, words)
+        self._clicks = []  # (signature, monotonic time, words, what she expected) of recent clicks
         self._unanswered = []  # (kind, monotonic time) of inputs in a row that changed nothing
         self._unsure_looks = 0  # unsure decisions in a row that looked again instead of acting
         self.status_callback = status or (lambda value: None)
@@ -800,6 +807,12 @@ class LifeKernel:
             if local_context is not None:
                 local_context["not_working"] = futile
             self._deep_next = True
+        same_spot = self._same_spot()
+        if same_spot:
+            context["same_spot"] = same_spot
+            if local_context is not None:
+                local_context["same_spot"] = same_spot
+            self._deep_next = True
         if self._unsure_looks:
             context["unsure_in_a_row"] = self._unsure_looks
             if local_context is not None:
@@ -1239,6 +1252,9 @@ class LifeKernel:
     def _note_effect(self, action, outcome, sent=True):
         """Remember inputs that visibly did nothing; a working one clears its record."""
         now, signature = time.monotonic(), self._signature(action)
+        if sent and action.kind in POINTER_CLICKS:
+            self._clicks = [entry for entry in self._clicks if now - entry[1] < 900][-19:] + [
+                (signature, now, action.kind + self._spot(action), action.expected)]
         if sent and action.kind != "wait":
             if outcome["status"] == "success":
                 self._unanswered = []
@@ -1247,13 +1263,33 @@ class LifeKernel:
         self._no_effect = [entry for entry in self._no_effect
                            if now - entry[1] < 900 and (outcome["status"] != "success" or entry[0] != signature)]
         if outcome["status"] != "success" and outcome.get("evidence", "").startswith("No visible"):
-            words = _action_words(action.to_dict())
-            if "x" in action.args and action.kind != "scroll":
-                space = getattr(getattr(self.provider, "config", None), "coordinate_space", "normalized")
-                point = in_space(action.to_dict(), space)["args"]
-                words += f" at {point['x']},{point['y']}"
-            self._no_effect.append((signature, now, words))
+            self._no_effect.append((signature, now, self._where(action)))
             del self._no_effect[:-20]
+
+    def _where(self, action) -> str:
+        """An input in words, with its spot in the brain's own coordinates."""
+        return _action_words(action.to_dict()) + self._spot(action)
+
+    def _spot(self, action) -> str:
+        if "x" not in action.args or action.kind == "scroll":
+            return ""
+        space = getattr(getattr(self.provider, "config", None), "coordinate_space", "normalized")
+        point = in_space(action.to_dict(), space)["args"]
+        return f" at {point['x']},{point['y']}"
+
+    def _same_spot(self) -> str | None:
+        """One spot clicked again and again lately, whatever each click was expected to do."""
+        now = time.monotonic()
+        recent = [entry for entry in self._clicks if now - entry[1] < 900]
+        if not recent:
+            return None
+        signature, count = Counter(entry[0] for entry in recent).most_common(1)[0]
+        if count < SAME_SPOT_CLICKS:
+            return None
+        here = [entry for entry in recent if entry[0] == signature]
+        hoped = "; ".join(dict.fromkeys(entry[3] for entry in here if entry[3]))[-400:]
+        return (f"{here[-1][2]}: clicked {count} times in the last quarter hour, each time expecting: {hoped}. "
+                "Look at what is really there before clicking it again.")
 
     def _futile(self) -> list[str]:
         """Tries she repeated that did nothing at least twice in the last quarter hour."""

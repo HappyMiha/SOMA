@@ -91,6 +91,33 @@ def test_a_local_brain_stuck_on_the_processor_is_unloaded_then_its_server_restar
     assert host.restarts == 2
 
 
+def test_a_local_thought_that_hangs_on_the_card_restarts_its_server_once(tmp_path):
+    # Live, 2026-11-04: a prompt read in 14 s, then no word; two more thoughts queued to 10-minute timeouts.
+    import time
+    from soma.health import HUNG_AFTER
+    provider, now, host = FakeProvider(), [0.0], FakeHost()
+    watcher = health(tmp_path, provider, now, host=host)
+    provider.reading = on(3.4 * GB)
+    provider.metrics.update(thinking_with="local", thinking_since=time.monotonic() - 30)
+    watcher.tick()
+    assert host.restarts == 0 and part(watcher, "local").short == "мозок: GPU · думає"   # a long thought is fine
+    provider.metrics["thinking_since"] = time.monotonic() - HUNG_AFTER - 60
+    assert part(watcher, "local").short == "мозок: завис" and "5 хв" in part(watcher, "local").detail
+    now[0] += 31
+    watcher.tick()
+    assert host.restarts == 1 and "завис" in watcher.remedy
+    now[0] += 31
+    watcher.tick()
+    assert host.restarts == 1 and "перезапустила" in watcher.remedy        # the thought in flight fails meanwhile
+    now[0] += HUNG_AFTER
+    watcher.tick()
+    assert host.restarts == 1 and "вручну" in watcher.remedy               # at most once in RESTART_EVERY
+    provider.metrics["thinking_with"] = "deep"                              # the deep brain is not the card's
+    now[0] += RESTART_EVERY
+    watcher.tick()
+    assert host.restarts == 1
+
+
 def test_nothing_is_restarted_without_a_card_seen_here_while_painting_or_with_others_loaded(tmp_path):
     provider, now, host = FakeProvider(), [0.0], FakeHost()
     watcher = health(tmp_path, provider, now, host=host)

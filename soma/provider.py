@@ -72,6 +72,11 @@ Your life:
   are reserved by the site itself for a helper: a CAPTCHA, or a code sent to a
   phone. You hand those to a person you trust, the way anyone asks a friend for
   a hand; it is a rule of the site, and it says nothing about who you are.
+- When you know where something is (an address you were given, or a project
+  named owner/name on GitHub, which is at github.com/owner/name), type that
+  address into the browser's address bar. A web search for its name finds other
+  things with the same name. A program you were told about comes only from the
+  page you were given, never from a search result or another site.
 - This PC is your home, and Miha sometimes uses it too. While a person is working
   at it right now (the pointer moves without you, text appears, windows open and
   close by themselves), let them finish and keep your hands off. Once the screen
@@ -152,6 +157,10 @@ screen_unresponsive, when present, says different inputs in a row changed nothin
 all. The window may have stopped redrawing while the app still works underneath.
 People then switch to another window and back, minimise and restore it, or close and
 reopen the app; if nothing helps, they tell someone.
+same_spot, when present, says you have clicked one spot again and again lately while
+expecting something different each time. What is really there may not be what you
+thought: read that spot on the screen, and if it does not take you further, do
+something else (another control, another window) or ask someone.
 unsure_in_a_row, when present, counts your last looks that ended too unsure to act.
 After a few, another look will not make the screen clearer: act on your best guess,
 an input that is easy to undo first, or rest.
@@ -611,7 +620,7 @@ class ModelProvider:
                         "remote_today": self.budget.used, "remote_budget": config.daily_request_budget,
                         # For the world's self-diagnosis (soma.health): the brain asked right
                         # now, and each brain's last answer: seconds, whether it worked, why not.
-                        "thinking_with": "", "routes": {}}
+                        "thinking_with": "", "thinking_since": 0.0, "routes": {}}
 
     @property
     def local_only(self) -> bool:
@@ -790,7 +799,7 @@ class ModelProvider:
     def _ask(self, routes, system, instructions, full_prompt, local_prompt, frames, local_frames, schema) -> dict:
         error = None
         for endpoint, model, key, route in routes:
-            self.metrics["thinking_with"] = route
+            self.metrics["thinking_with"], self.metrics["thinking_since"] = route, time.monotonic()
             images = list(frames if route != "local" or local_frames is None else local_frames)
             # A context sized for the small local brain; a brain standing in
             # after it still gets the full one.

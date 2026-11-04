@@ -764,6 +764,27 @@ def test_a_try_that_keeps_doing_nothing_is_noticed_and_goes_to_the_wiser_brain(k
     assert stuck[0] is True and "nothing visible happened, 2 times" in stuck[1][0] and "0.552" in stuck[1][0]
 
 
+def test_one_spot_clicked_again_and_again_is_pointed_out_even_when_called_a_success(kernel):
+    # Live, 2026-11-04: the routine brain clicked one spot 13 times in an hour expecting a
+    # Star button, a download, an extraction; its checker called some of them successes.
+    hopes = ["Star button fills", "Download starts", "Extraction begins", "Download starts", "Client opens"]
+    asked = []
+    def decide(frame, context, local_context=None, with_image=True, deep=False):
+        asked.append((deep, context.get("same_spot")))
+        hope = hopes[min(len(asked) - 1, len(hopes) - 1)]
+        x = (.418, .414, .425, .42, .418)[min(len(asked) - 1, 4)]
+        return Decision("Page", "Get the client", {"origin": "self", "motive": "play", "description": "Join the world",
+            "priority": .5, "expected_outcome": "Joined"}, Action("click", {"x": x, "y": .424}, hope), .1)
+    kernel.provider.routes_by_job = True
+    kernel.provider.decide = decide
+    for _ in range(5):
+        kernel.cycle()
+    assert [entry[1] for entry in asked[:4]] == [None] * 4                 # three clicks are no pattern
+    deep, note = asked[4]
+    assert deep is True and "clicked 4 times" in note and "Star button fills; Download starts" in note
+    assert note.startswith("click at 0.42,0.424: clicked 4 times") and "Extraction begins" in note
+
+
 def test_a_window_that_answers_no_input_at_all_is_noticed(kernel):
     # Live: Firefox stopped redrawing; scrolls, clicks and Ctrl+L all changed nothing for 25 minutes.
     kernel._settle = lambda before: make_frame()          # the picture never changes

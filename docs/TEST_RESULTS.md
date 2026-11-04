@@ -829,6 +829,37 @@ The complete specification Definition of Done is **not yet satisfied**.
   his drawn figure first stood in the bands. At 17:16 the painter painted him
   anew for his current theme: a library with a globe and a world map, at his
   desk. 264 tests.
+* **2026-11-04, SOMIK sets off into SOMA World.** At 08:56 SOMIK read about the
+  owner's online world in the Claude app on his screen. He then went for it
+  himself. The release asset and the server (TCP to soma.lokvetia.com:64870
+  through playit) were checked from his network.
+  Four things went wrong on the way:
+  * A web search for "soma-world download site" led him to a music store. His
+    prompt now says that a known address (a GitHub owner/name) goes into the
+    address bar, and that a program comes only from the page he was given.
+    After that he typed github.com/HappyMiha/soma-world himself, then
+    `/releases`, and downloaded the 194,945,069-byte zip and unpacked it.
+  * The routine brain clicked one spot 13 times in an hour expecting different
+    things, and its checker called some of these clicks successes. A spot
+    clicked four times in a quarter hour is now pointed out (`same_spot`), and
+    the next look goes to the deep brain.
+  * The local model server read a prompt and then gave no word. Two more
+    thoughts queued behind it to their 10-minute timeouts while the card sat
+    idle; the widget said «GPU · думає» all along. A local thought on the card
+    lasting over 4 minutes now shows «мозок: завис» and restarts Ollama (at
+    most once in 2 h).
+  * The painter was "missing" after every normal start since 31 Oct. My shell
+    runs inside the Claude app's MSIX package, which had silently redirected
+    the new folders `SOMA-imaging` and `SOMA-backups` into the package's
+    private store. They were moved to the real %LOCALAPPDATA% by a process
+    started through Explorer. SOMA, now started through its own shortcut, finds
+    the painter at once.
+  The deep brain then saw the client unpacked and deferred launching it: it
+  asked Miha in Telegram before overriding SmartScreen for an unsigned program.
+  The local brain, reading Explorer as text only, kept taking cataclysm-tiles
+  (43.3 MB) for the zip. The connection itself is not yet tested. Four more
+  unclean resets overnight (20:22, 03:55, 04:25, 08:53), still without a
+  bugcheck code. 266 tests; each build installed, smoke passed.
 
 ## Confirmed
 

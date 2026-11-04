@@ -4,7 +4,8 @@ Everything read here is SOMA's own: its brains' answers and timings (soma.provid
 the local brain server's own HTTP API, the painter and the life loop. No process
 list, window or file of another application is read.
 
-One part heals itself. Live, after a reboot the local brain ran on the processor
+One part heals itself (and a hung local thought, see HUNG_AFTER, the same way).
+Live, after a reboot the local brain ran on the processor
 although the GTX 1060 was there (1-6 minutes a thought instead of ~10 s). When the
 local model sits on the processor although it has run on the graphics card here
 before, it is first unloaded (the next thought loads it again, onto the card if
@@ -26,6 +27,10 @@ LIVE_EVERY = 3             # seconds between updates of what works right now
 RESTART_EVERY = 2 * 3600   # at most one restart of the local server in this long
 STATE = "health.json"      # in the world's folder: whether the local brain has run on the card
 ON_CARD = 0.9              # share of the model in video memory that counts as "on the card"
+# A local thought on the card takes 10-60 s here. Live, 2026-11-04, the server read a
+# prompt in 14 s and then gave no word for 5 minutes; the next two thoughts queued
+# behind it to their 10-minute timeouts while the card sat idle. One this long has hung.
+HUNG_AFTER = 240
 
 BRAIN_NAMES = {"claude": "Claude", "codex": "Codex", "openai": "віддалена модель"}
 STATES = ("ok", "busy", "idle", "warn", "problem")  # worst last
@@ -99,6 +104,14 @@ class Health:
         if reading["vram"] >= ON_CARD * reading["size"]:
             if not self._state().get("local_on_card_seen"):
                 self._remember(local_on_card_seen=datetime.now(timezone.utc).isoformat(timespec="seconds"))
+            if self._hung():
+                if reading.get("others"):
+                    self.remedy = "Локальний мозок завис, але Ollama тримає й інші моделі, тому SOMA її не перезапускає."
+                elif (not self._restart("restarted_hung", "Локальний мозок думав понад 4 хвилини без жодного слова "
+                                        "(сервер моделей завис): SOMA перезапустила Ollama.")
+                      and self.clock() - self._restarted_at >= HUNG_AFTER):  # still hung well after it
+                    self.remedy = "Локальний мозок завис, а Ollama вже перезапускали нещодавно: перезапусти її вручну."
+                return
             if self._unloaded or self.remedy:
                 self.remedy = "Локальний мозок знову на відеокарті."
             self._unloaded = False
@@ -117,19 +130,30 @@ class Health:
             self.remedy = "Локальний мозок опинився на процесорі: SOMA вивантажила його, щоб він повернувся на відеокарту."
             self._journal("unloaded")
             return
-        now = self.clock()
-        if (self.host is not None and getattr(self.host, "available", False) and
-                (self._restarted_at is None or now - self._restarted_at >= RESTART_EVERY)):
-            self._restarted_at, self._unloaded = now, False
-            try:
-                self.host.restart()
-                self.remedy = "Ollama не бачила відеокарту (так буває після старту ПК): SOMA перезапустила її."
-                self._journal("restarted")
-            except Exception as exc:
-                self.remedy = "Не вдалося перезапустити Ollama: " + type(exc).__name__
+        if self._restart("restarted", "Ollama не бачила відеокарту (так буває після старту ПК): SOMA перезапустила її."):
             return
         self.remedy = ("Відеокарту не знайдено навіть після перезапуску Ollama: перевір, чи підключена "
                        "eGPU, і перезапусти Ollama, коли вона з'явиться.")
+
+    def _hung(self) -> bool:
+        metrics = self.provider.metrics
+        return (metrics.get("thinking_with") == "local"
+                and time.monotonic() - metrics.get("thinking_since", time.monotonic()) >= HUNG_AFTER)
+
+    def _restart(self, did, said) -> bool:
+        """Restart the local server, at most once in RESTART_EVERY; False when not allowed now."""
+        now = self.clock()
+        if (self.host is None or not getattr(self.host, "available", False) or
+                (self._restarted_at is not None and now - self._restarted_at < RESTART_EVERY)):
+            return False
+        self._restarted_at, self._unloaded = now, False
+        try:
+            self.host.restart()
+            self.remedy = said
+            self._journal(did)
+        except Exception as exc:
+            self.remedy = "Не вдалося перезапустити Ollama: " + type(exc).__name__
+        return True
 
     def _journal(self, did):
         if self.journal is not None:
@@ -166,6 +190,10 @@ class Health:
                         "мозок: завантажується" if thinking else "мозок спить",
                         f"{model} вивантажено; завантажиться з першою думкою{took}.")
         size, vram = reading["size"], reading["vram"]
+        if vram >= ON_CARD * size and self._hung():
+            minutes = (time.monotonic() - self.provider.metrics.get("thinking_since", 0.0)) // 60
+            return Part("local", title, "problem", "мозок: завис",
+                        f"{model} на відеокарті, але вже {minutes:.0f} хв думає без жодного слова{took}.")
         if vram >= ON_CARD * size:
             return Part("local", title, "busy" if thinking else "ok", "мозок: GPU · думає" if thinking else "мозок: GPU",
                         f"{model} на відеокарті ({_gigabytes(vram)}){took}.")
